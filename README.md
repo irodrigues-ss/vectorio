@@ -2,5 +2,5 @@
 
 
 ## Requirements
-- python3.7 e pip3 (ou pip3.7)
+- python3.7 e pip3 (or pip3.7)
 - gdal >= 2.2
