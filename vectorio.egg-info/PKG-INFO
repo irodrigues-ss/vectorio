@@ -1,14 +1,24 @@
-Metadata-Version: 1.2
+Metadata-Version: 2.1
 Name: vectorio
-Version: 1.0.0
-Summary: utility for working with vector data
+Version: 1.0.2
+Summary: Geoprocessing utility for working with vector data
 Home-page: https://github.com/igor-rodrigues-ss/vectorio
 Author: Igor Rodrigues Sousa Silva
 Author-email: igor.rodrigues.ss10@gmail.com
 License: UNKNOWN
-Description: UNKNOWN
+Description: # Vector IO - Geoprocessing utility for working with vector data.
+        
+        ## Requirements
+        - python3.7
+        - gdal >= 2.2
+        
+        ## Description
+        This project is a tool for working with vectorial data based on [GDAL](https://gdal.org/). This tool is an envelope about gdal and aims to work with different types of vector data quickly, intelligently, and simply.  
+        
+        
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
+Description-Content-Type: text/markdown
