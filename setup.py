@@ -5,13 +5,19 @@ setup(name='vectorio',
     description='utility for working with vector data',
     author='Igor Rodrigues Sousa Silva',
     author_email='igor.rodrigues.ss10@gmail.com',
-    url='http://teste.com',
+    url='https://github.com/igor-rodrigues-ss/vectorio',
     test_suite='tests',
     packages=find_packages(exclude='tests'),
     tests_require=['pytest'],
     install_requires=[
         'rarfile==3.1',
-    ]
+    ],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires='>=3.7',
 )
 
 # sudo apt-get install unrar
