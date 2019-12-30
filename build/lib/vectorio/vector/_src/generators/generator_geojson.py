@@ -16,7 +16,7 @@ class GeneratorGeojson:
         self._gen = gen
 
     def features(self) -> Generator[str, None, None]:
-        feature_processor = lambda feature: json.dumps(json.loads(feature.ExportToJson()), ensure_ascii=False)
+        feature_processor = lambda feature: json.dumps(json.loads(feature.ExportToJson()), ensure_ascii=False) # removing ascii codec
         next(self._gen)
         self._gen.send(feature_processor)
         return self._gen

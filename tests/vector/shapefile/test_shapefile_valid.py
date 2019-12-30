@@ -5,7 +5,9 @@ import tempfile
 import shutil
 import pytest
 import json
-from vectorio.vector import Shapefile, ShapefileAsZip, Geojson
+from vectorio.vector import (
+    Shapefile, ShapefileAsZip, ShapefileAsRar, Geojson
+)
 from tests.config import FILESDIR_FROM_FIXTURES
 from osgeo.ogr import DataSource
 from osgeo import ogr
@@ -67,12 +69,13 @@ class TestShapefileValid:
         drv = ogr.GetDriverByName('GeoJSON')
         assert isinstance(drv.Open(feat_collec), DataSource)
 
-    # def test_collection_from_rar(self):
-    #     feat_collec = self.shapefile.collection(
-    #         self.shapefile.datasource(self.shape_as_rar)
-    #     )
-    #     drv = ogr.GetDriverByName('GeoJSON')
-    #     assert isinstance(drv.Open(feat_collec), DataSource)
+    def test_collection_from_rar(self):
+        shape_as_rar = ShapefileAsRar(self.shapefile)
+        feat_collec = shape_as_rar.collection(
+            shape_as_rar.datasource(self.shape_as_rar)
+        )
+        drv = ogr.GetDriverByName('GeoJSON')
+        assert isinstance(drv.Open(feat_collec), DataSource)
 
     def test_write(self):
         gj = Geojson()
@@ -86,11 +89,6 @@ class TestShapefileValid:
         assert "áàéãôç" in self.shapefile.collection(
             self.shapefile.datasource(out_path)
         )
-
-    def test_write_error(self):
-        gj = Geojson()
-        with pytest.raises(AssertionError):
-            self.shapefile_as_zip.write(gj.datasource(self.gjs), '/tmp/out')
 
     def teardown_method(self):
         shutil.rmtree(self.dirpath_tmp)
