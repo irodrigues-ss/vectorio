@@ -4,7 +4,7 @@ import os
 import json
 
 from tests.config import FILESDIR_FROM_FIXTURES
-from vectorio.vector import Shapefile
+from vectorio.vector import Shapefile, ShapefileAsZip
 from vectorio.vector import VectorReprojected
 from osgeo.ogr import DataSource
 
@@ -15,7 +15,7 @@ class TestVectorReprojected:
         self.shp_utm_22 = os.path.join(
             FILESDIR_FROM_FIXTURES, 'data_utm22.zip'
         )
-        self.shapefile = Shapefile()
+        self.shapefile = ShapefileAsZip(Shapefile())
         self.vector = VectorReprojected(self.shapefile, out_srid=4674)
 
     def test_datasource(self):

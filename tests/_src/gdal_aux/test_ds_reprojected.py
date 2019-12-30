@@ -6,6 +6,7 @@ from vectorio.vector import Shapefile
 from vectorio.vector._src.gdal_aux.ds_reprojected import (
     DataSourceReprojected
 )
+from vectorio.vector import ShapefileAsZip
 
 
 class TestDataSourceReprojected:
@@ -14,7 +15,7 @@ class TestDataSourceReprojected:
         self.shp_utm_22 = os.path.join(
             FILESDIR_FROM_FIXTURES, 'data_utm22.zip'
         )
-        self.shapefile = Shapefile()
+        self.shapefile = ShapefileAsZip(Shapefile())
 
     def test_ref(self):
         ds_as_utm22 = self.shapefile.datasource(self.shp_utm_22)

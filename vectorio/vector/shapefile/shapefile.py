@@ -8,9 +8,6 @@ from typing import Generator
 from osgeo import ogr, osr
 from osgeo.ogr import DataSource, Feature
 from vectorio.vector.interfaces.ivector_file import IVectorFile
-from vectorio.vector.shapefile.decorators.shapefile_extracted import (
-    ShapefileExtracted
-)
 from vectorio.vector._src.generators.generator_geojson import GeneratorGeojson
 from vectorio.vector._src.generators.feature_collection_concatenated import (
     FeatureCollectionConcatenated
@@ -20,19 +17,19 @@ from vectorio.vector._src.generators.generator_with_feature_processor import (
 )
 from vectorio.vector.exceptions import (
     ShapefileInvalid, ShapefileIsEmpty,
-    ImpossibleCreateShapefileFromGeometryCollection
+    ImpossibleCreateShapefileFromGeometryCollection, FileNotFound
 )
-from vectorio.vector._src.cpfs.factory import CompressedFilesFactory
 from vectorio.vector.shapefile.file_required_by_extension import (
     FileRequiredByExtension
 )
 from uuid import uuid4
-
+from vectorio.vector._src.gdal_aux.cloned_ds import (
+    GDALClonedDataSource
+)
 
 os.environ['SHAPE_ENCODING'] = "UTF-8"
 
 
-@ShapefileExtracted
 class Shapefile(IVectorFile):
 
     _driver = None
@@ -48,13 +45,17 @@ class Shapefile(IVectorFile):
             )
 
     def datasource(self, fpath: str) -> DataSource:
+        if not os.path.exists(fpath):
+            raise FileNotFound(f'"{fpath}" does not exists.')
+
         ds = self._driver.Open(fpath)
         if ds is None:
             raise ShapefileInvalid(
-                'Shapefile invalid. Please, check if your shapefile is correct.'
+                'Shapefile invalid. Please, check if your shapefile is correct'
+                ' or if the files .dbf .shx and .prj are next to the .shp file.'
             )
         self._has_data(ds)
-        return ds
+        return GDALClonedDataSource(ds).ref()
 
     def items(self, datasource: DataSource) -> Generator[str, None, None]:
         return GeneratorGeojson(
