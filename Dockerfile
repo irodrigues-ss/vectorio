@@ -42,17 +42,7 @@ RUN cd /tmp/gdal-${GDAL_VERSION}/swig/python && python3 setup.py install
 FROM debian:bullseye as runner_stage
 
 RUN apt-get update
-RUN apt-get install -y python3 unrar-free python3-pip
-
-RUN apt-get install -y libjson-c-dev libfreexl-dev libqhull-dev libgeos-dev \
-    libwebp-dev libodbc1 libkmlbase1 libkmldom1 \
-    libkmlengine1 libkmlxsd1 libkmlregionator1 libxerces-c-dev libkmlengine1 \
-    libopenjp2-7-dev libnetcdf-dev libhdf4-0-alt libgif-dev \
-    libcharls-dev libgeotiff-dev libpq-dev
-
-# libogdi3.2-dev
-# libodbcinstq4-1
-
+RUN apt-get install -y python3 unrar-free python3-pip libgdal-dev
 
 COPY --from=build_stage /tmp/build_proj/usr/local/share/proj/ /usr/local/share/proj/
 COPY --from=build_stage /tmp/build_proj/usr/local/include/ /usr/local/include/
@@ -65,4 +55,6 @@ COPY --from=build_stage /tmp/build/usr/local/bin/ /usr/local/bin/
 COPY --from=build_stage /tmp/build/usr/local/lib/ /usr/local/lib/
 
 RUN pip3 install gdal==2.4
+RUN pip3 install vectorio
 RUN ldconfig
+CMD python3

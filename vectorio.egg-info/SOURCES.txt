@@ -17,13 +17,6 @@ vectorio/gdal/error/func_decorators.py
 vectorio/vector/__init__.py
 vectorio/vector/exceptions.py
 vectorio/vector/_src/__init__.py
-vectorio/vector/_src/cpfs/__init__.py
-vectorio/vector/_src/cpfs/factory.py
-vectorio/vector/_src/cpfs/rarfiles.py
-vectorio/vector/_src/cpfs/zipfiles.py
-vectorio/vector/_src/cpfs/interfaces/__init__.py
-vectorio/vector/_src/cpfs/interfaces/icompressed_files.py
-vectorio/vector/_src/cpfs/interfaces/icompressed_files_factory.py
 vectorio/vector/_src/gdal_aux/__init__.py
 vectorio/vector/_src/gdal_aux/cloned_ds.py
 vectorio/vector/_src/gdal_aux/cloned_feature.py
@@ -31,8 +24,6 @@ vectorio/vector/_src/gdal_aux/cloned_layer.py
 vectorio/vector/_src/gdal_aux/ds_reprojected.py
 vectorio/vector/_src/generators/__init__.py
 vectorio/vector/_src/generators/feature_collection_concatenated.py
-vectorio/vector/_src/generators/generator_geojson.py
-vectorio/vector/_src/generators/generator_with_feature_processor.py
 vectorio/vector/composite/__init__.py
 vectorio/vector/composite/vector_composite.py
 vectorio/vector/composite/interfaces/__init__.py
@@ -51,8 +42,8 @@ vectorio/vector/shapefile/__init__.py
 vectorio/vector/shapefile/file_required_by_extension.py
 vectorio/vector/shapefile/shapefile.py
 vectorio/vector/shapefile/decorators/__init__.py
+vectorio/vector/shapefile/decorators/shapefile_as_rar.py
 vectorio/vector/shapefile/decorators/shapefile_as_zip.py
-vectorio/vector/shapefile/decorators/shapefile_extracted.py
 vectorio/vector/shapefile/interfaces/__init__.py
 vectorio/vector/shapefile/interfaces/ifile_required_by_extension.py
 vectorio/vector/srs/__init__.py

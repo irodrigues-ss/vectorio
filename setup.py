@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='vectorio',
-    version='1.0.2',
+    version='1.1.0',
     description='Geoprocessing utility for working with vector data',
     author='Igor Rodrigues Sousa Silva',
     long_description=long_description,
@@ -24,7 +24,3 @@ setup(name='vectorio',
     ],
     python_requires='>=3.7',
 )
-
-# sudo apt-get install unrar
-# pip install gdal==2.2
-# install gdal

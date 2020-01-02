@@ -15,6 +15,15 @@ This project is a tool for working with vectorial data based on [GDAL](https://g
 
 - Complete enviroment on Debian: [Dockerfile](Dockerfile)
 
+Creating a image and instantiate the container:
+
+```shell
+# access the directory where is the Dockerfile
+docker image build -t vectorio-env:001 . # build the image
+# vectorio-env:001 - can be any name with the version of the your preference
+docker container run -it vectorio-env:001 # instantiate a new container
+```
+
 #### Ubuntu 18.04
 
 - Rar
@@ -34,12 +43,12 @@ pip3 install gdal==<gdal_version>
 ```
 
 ## Features
-- Read and write geojson
-- Read and write WKT
-- Read and write Shapefile
-- Reprojecting a vector
-- Quickly switching between geographic data
-- Raise exception for warnings from gdal
+- [Read and write geojson](#read-and-write-geojson)
+- [Read and write WKT](#read-and-write-wkt)
+- [Read and write Shapefile](#read-and-write-wkt)
+- [Reprojecting a vector](#read-and-write-wkt)
+- [Quickly switching between geographic data](#quickly-switching-between-geographic-data)
+- [Raise exception for warnings from gdal](#raise-exception-for-warnings-from-gdal)
 
 #### Read and Write Geojson
 
@@ -49,7 +58,7 @@ Working with geojson data and geojson file. By default, the datasource is create
 
 ```python
 from vectorio.vector import Geojson
-gj_data = '{"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon","coordinates": [[[-44.89013671875,-6.577303118123875],[-46.29638671874999,-7.460517719883772],[-44.4287109375,-7.318881730366743],[-44.89013671875,-6.577303118123875]]]}}]}'
+data = '{"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon","coordinates": [[[-44.89013671875,-6.577303118123875],[-46.29638671874999,-7.460517719883772],[-44.4287109375,-7.318881730366743],[-44.89013671875,-6.577303118123875]]]}}]}'
 gjs = Geojson()
 ```
 
@@ -79,9 +88,9 @@ gjs.write(ds, 'data.geojson')
 
 ```python
 from vectorio.vector import GeoFile
-gjs = GeoFile(gjs)
-ds = gjs.datasource('data.geojson')
-gjs.collection(ds)
+gf_gjs = GeoFile(gjs)
+ds = gf_gjs.datasource('data.geojson')
+gf_gjs.collection(ds)
 ```
 
 <br/>
@@ -90,11 +99,19 @@ gjs.collection(ds)
 
 Working with wkt data and wkt file. Is supported geometry collection and single geometries. By default, the datasource is created as WGS84.
 
+The wkt object has some parameters:
+
+```python
+WKT(as_geometry_collection=True, srid=4326)
+```
+- *as_geometry_collection*: return a geometry collection same when the data is a single geometry by method *collection*.
+- *srid*: Initial SRID for WKT.
+
 - Preparing the data
 
 ```python
 from vectorio.vector import WKT
-data = "GEOMETYCOLLECTION(POINT(-48.740641051554974 -9.249606262178954), LINESTRING(-50.278726989054974 -11.023166202413554,-48.608805114054974 -10.375450023701761))"
+data = "GEOMETRYCOLLECTION(POINT(-48.740641051554974 -9.249606262178954), LINESTRING(-50.278726989054974 -11.023166202413554,-48.608805114054974 -10.375450023701761))"
 wkt = WKT()
 ```
 
@@ -109,7 +126,7 @@ wkt.collection(ds)
 
 ```python
 ds = wkt.datasource(data)
-for item in wkt.items(ds)
+for item in wkt.items(ds):
     print(item)
 ```
 
@@ -124,9 +141,9 @@ wkt.write(ds, 'data.wkt')
 
 ```python
 from vectorio.vector import GeoFile
-wkt = GeoFile(wkt)
-ds = wkt.datasource('data.wkt')
-wkt.collection(ds)
+gf_wkt = GeoFile(wkt)
+ds = gf_wkt.datasource('data.wkt')
+gf_wkt.collection(ds)
 ```
 
 <br/>
@@ -180,7 +197,7 @@ shape.collection(ds)  # read all data
 for item in shape.items(ds):  # iterating over each item
     print(item)
 
-shape.write(ds, 'out.shp') # Creating a shapefile compressed as .zip
+shape.write(ds, 'out.zip') # Creating a shapefile compressed as .zip
 # >>> out.zip
 ```
 
@@ -195,7 +212,7 @@ shape.collection(ds)  # read all data
 for item in shape.items(ds):  # iterating over each item
     print(item)
 
-shape.write(ds, 'out.shp') # Creating a shapefile compressed as .rar
+shape.write(ds, 'out.rar') # Creating a shapefile compressed as .rar
 # >>> out.rar
 ```
 
@@ -213,14 +230,14 @@ from vectorio.vector import Shapefile, ShapefileAsZip, VectorReprojected
 shape = VectorReprojected(
     ShapefileAsZip(Shapefile()), in_srid=31982, out_srid=4674
 )
-ds = shape.datasource('data-utm22.zip')
+ds = shape.datasource('data_utm22.zip')
 
 shape.collection(ds)  # read all data
 
 for item in shape.items(ds):  # iterating by each feature
     print(item)
 
-shape.write(ds, 'data-reprojected.shp')  # creating a new shapefile
+shape.write(ds, 'data_reprojected.zip')  # creating a new shapefile
 ```
 
 - Reprojecting a WKT
@@ -320,7 +337,7 @@ for geom in vector.items(data):
 - Creating a shapefile as zip
 
 ```python
-vector.write(data, 'output.shp')
+vector.write(data, 'output.zip')
 ```
 
 <br/>
@@ -347,3 +364,12 @@ def possible_error():
 possible_error()
 # >>> GDALSelfIntersectionGeometry: Self-intersection at or near point -54.469636435829948 -5.6217621987992636
 ```
+
+##### Possibles exceptions
+- *GDALSelfIntersectionGeometry*: Exception throwed when a polygon contains a self intersection.  
+- *GDALBadClosedPolygon*: Exception throwed when a polygon not correctly close.
+- *GDALUnknownException*: Exception throwed when occurs a unknown error.
+
+**Obs:** All the exceptions are available on package *vectorio.exceptions*
+
+

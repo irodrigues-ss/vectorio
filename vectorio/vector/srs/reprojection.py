@@ -34,8 +34,5 @@ class VectorReprojected(IVector):
     def collection(self, datasource: DataSource) -> str:
         return self._vector.collection(datasource)
 
-    def srid(self, fpath: str) -> int:
-        return self._vector.srid(fpath)
-
     def write(self, ds: DataSource, out_path: str) -> str:
         return self._vector.write(ds, out_path)

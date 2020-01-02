@@ -47,14 +47,15 @@ class ShapefileAsZip(IVectorFile):
         return self._shapefile.collection(datasource)
 
     def write(self, ds: DataSource, out_path: str) -> str:
-        out_shp = self._shapefile.write(ds, out_path)
+        assert out_path.endswith('.zip'), 'Output file have has .zip extension.'
+        out_shp = self._shapefile.write(ds, out_path.replace('.zip', '.shp'))
         files = [
             out_shp,
             out_shp.replace('.shp', '.dbf'),
             out_shp.replace('.shp', '.prj'),
             out_shp.replace('.shp', '.shx')
         ]
-        out_zip = self._compress_files(out_shp.replace('.shp', '.zip'), files)
+        out_zip = self._compress_files(out_path, files)
         for f in files:
             os.remove(f)
         return out_zip

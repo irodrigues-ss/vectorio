@@ -10,9 +10,7 @@ from osgeo.ogr import Geometry, DataSource, Feature
 from vectorio.vector.interfaces.ivector_data import IVectorData
 from vectorio.vector.exceptions import WKTInvalid
 from vectorio.vector.wkt.geom_type_factory import GeometryTypeFactory
-from vectorio.vector._src.generators.generator_with_feature_processor import (
-    GeneratorWithFeatureProcessor
-)
+
 
 GEOMETRYCOLLECTION_PREFIX = 'GEOMETRYCOLLECTION'
 
@@ -20,15 +18,13 @@ GEOMETRYCOLLECTION_PREFIX = 'GEOMETRYCOLLECTION'
 class WKT(IVectorData):
 
     _gt_factory = None
-    _inp_ds = None
-    _out_ds = None
-    _initial_srid = 4326
+    _initial_srid = 0
+    _as_geometry_collection = True
 
-    def __init__(self):
-        drv = ogr.GetDriverByName('MEMORY')
-        self._inp_ds = drv.CreateDataSource('inputData')
-        self._out_ds = drv.CreateDataSource('outputData')
+    def __init__(self, as_geometry_collection: bool=True, srid: int=4326):
         self._gt_factory = GeometryTypeFactory()
+        self._initial_srid = srid
+        self._as_geometry_collection = as_geometry_collection
 
     def _srs(self):
         srs = osr.SpatialReference()
@@ -36,6 +32,8 @@ class WKT(IVectorData):
         return srs
 
     def datasource(self, input_data: str) -> DataSource:
+        drv = ogr.GetDriverByName('MEMORY')
+        out_ds = drv.CreateDataSource(str(uuid4()))
         geom = None
         if not bool(input_data):
             raise WKTInvalid(
@@ -48,7 +46,7 @@ class WKT(IVectorData):
             raise WKTInvalid(
                 f'Invalid wkt data. Please, check is the data "{input_data}" is in wkt pattern.'
             )
-        l1 = self._out_ds.CreateLayer(
+        l1 = out_ds.CreateLayer(
             str(uuid4()), self._srs(),
             self._gt_factory.get_type(geom.GetGeometryName())
         )
@@ -56,23 +54,29 @@ class WKT(IVectorData):
         feat.SetGeometry(geom)
         # this change on this layer "l1" will be reflected on "_out_ds"
         l1.SetFeature(feat)
-        return self._out_ds
+        return out_ds
 
-    def items(self, datasource: DataSource) -> Generator[str, None, None]:
-        gen = GeneratorWithFeatureProcessor(datasource)
-        feature_processor = lambda feature: feature.geometry().ExportToWkt()
-        next(gen)
-        gen.send(feature_processor)
-        return gen
+    def items(self, ds: DataSource) -> Generator[str, None, None]:
+        lyr = ds.GetLayer(0)
+        feat = lyr.GetFeature(0)
+        if feat.geometry().GetGeometryName() == 'POINT' \
+           or feat.geometry().GetGeometryName() == 'LINESTRING':
+            yield feat.geometry().ExportToWkt()
+        else:
+            for idx_geom in range(feat.geometry().GetGeometryCount()):
+                yield feat.geometry().GetGeometryRef(idx_geom).ExportToWkt()
 
-    def collection(self, datasource: DataSource) -> str:
-        concat_geometries_lbd = lambda x, y: str(x) + ',' + str(y)
-        geometries_str = reduce(
-            concat_geometries_lbd, self.items(datasource)
-        )
-        if geometries_str.startswith(GEOMETRYCOLLECTION_PREFIX):
-            return geometries_str
-        return f'{GEOMETRYCOLLECTION_PREFIX} ({geometries_str})'
+    def collection(self, ds: DataSource) -> str:
+        lyr = ds.GetLayer(0)
+        feat = lyr.GetFeature(0)
+        out_wkt = feat.geometry().ExportToWkt()
+        if out_wkt.startswith(GEOMETRYCOLLECTION_PREFIX):
+            return out_wkt
+        else:
+            if self._as_geometry_collection:
+                return f'{GEOMETRYCOLLECTION_PREFIX} ({out_wkt})'
+            else:
+                return out_wkt
 
     def write(self, ds: DataSource, out_path: str) -> str:
         self._validate_basedir(out_path)
