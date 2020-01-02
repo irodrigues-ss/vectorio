@@ -13,7 +13,7 @@ This project is a tool for working with vectorial data based on [GDAL](https://g
 
 #### Docker
 
-- Complete enviroment on Debian: [Dockerfile](Dockerfile)
+- Complete enviroment on Debian: [Dockerfile](https://github.com/igor-rodrigues-ss/vectorio/blob/master/Dockerfile)
 
 Creating a image and instantiate the container:
 

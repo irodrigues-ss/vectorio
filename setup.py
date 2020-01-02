@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='vectorio',
-    version='1.1.0',
+    version='1.1.1',
     description='Geoprocessing utility for working with vector data',
     author='Igor Rodrigues Sousa Silva',
     long_description=long_description,
