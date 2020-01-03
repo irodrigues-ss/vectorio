@@ -1,7 +1,7 @@
 # Vector IO - Geoprocessing utility for working with vector data.
 
 ## Requirements
-- python3.7
+- python >= 3.6
 - gdal >= 2.2
 - rar
 - unrar
@@ -13,7 +13,7 @@ This project is a tool for working with vectorial data based on [GDAL](https://g
 
 #### Docker
 
-- Complete enviroment on Debian: [Dockerfile](https://github.com/igor-rodrigues-ss/vectorio/blob/master/Dockerfile)
+- Complete enviroment on Ubuntu: [Dockerfile](https://github.com/igor-rodrigues-ss/vectorio/blob/master/Dockerfile)
 
 Creating a image and instantiate the container:
 

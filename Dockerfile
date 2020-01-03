@@ -1,6 +1,6 @@
-FROM debian:bullseye as build_stage
+FROM ubuntu:18.04 as build_stage
 
-RUN apt update
+RUN apt-get update
 
 ARG GDAL_VERSION=2.4.2
 ARG PROJ_VERSION=6.0.0
@@ -39,10 +39,10 @@ ENV C_INCLUDE_PATH=/usr/include/gdal
 RUN cd /tmp/gdal-${GDAL_VERSION}/swig/python && python3 setup.py install
 
 
-FROM debian:bullseye as runner_stage
+FROM ubuntu:18.04 as runner_stage
 
 RUN apt-get update
-RUN apt-get install -y python3 unrar-free python3-pip libgdal-dev
+RUN apt-get install -y python3 python3-pip libgdal-dev rar unrar
 
 COPY --from=build_stage /tmp/build_proj/usr/local/share/proj/ /usr/local/share/proj/
 COPY --from=build_stage /tmp/build_proj/usr/local/include/ /usr/local/include/
