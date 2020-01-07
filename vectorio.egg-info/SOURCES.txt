@@ -48,6 +48,8 @@ vectorio/vector/shapefile/interfaces/__init__.py
 vectorio/vector/shapefile/interfaces/ifile_required_by_extension.py
 vectorio/vector/srs/__init__.py
 vectorio/vector/srs/reprojection.py
+vectorio/vector/utm/__init__.py
+vectorio/vector/utm/utm_zone.py
 vectorio/vector/wkt/__init__.py
 vectorio/vector/wkt/geom_type_factory.py
 vectorio/vector/wkt/wkt.py

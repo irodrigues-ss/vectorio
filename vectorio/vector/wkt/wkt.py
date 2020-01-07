@@ -58,18 +58,15 @@ class WKT(IVectorData):
 
     def items(self, ds: DataSource) -> Generator[str, None, None]:
         lyr = ds.GetLayer(0)
-        feat = lyr.GetFeature(0)
-        if feat.geometry().GetGeometryName() == 'POINT' \
-           or feat.geometry().GetGeometryName() == 'LINESTRING':
+
+        for idx_feat in range(lyr.GetFeatureCount()):
+            feat = lyr.GetFeature(idx_feat)
             yield feat.geometry().ExportToWkt()
-        else:
-            for idx_geom in range(feat.geometry().GetGeometryCount()):
-                yield feat.geometry().GetGeometryRef(idx_geom).ExportToWkt()
 
     def collection(self, ds: DataSource) -> str:
-        lyr = ds.GetLayer(0)
-        feat = lyr.GetFeature(0)
-        out_wkt = feat.geometry().ExportToWkt()
+        out_wkt = reduce(
+            lambda x,y: x + ',' + y, self.items(ds)
+        )
         if out_wkt.startswith(GEOMETRYCOLLECTION_PREFIX):
             return out_wkt
         else:

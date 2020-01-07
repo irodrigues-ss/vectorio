@@ -33,23 +33,19 @@ class TestWKT:
             return [item for item in wkt.items(wkt.datasource(self.exp_data_lst[idx_data]))]
 
         items = create_items(0)
-        assert items[0].startswith('POLYGON')
-        assert items[1].startswith('POINT')
+        assert items[0].startswith('GEOMETRYCOLLECTION')
         items1 = create_items(1)
         assert items1[0].startswith('POINT')
         items2 = create_items(2)
         assert items2[0].startswith('LINESTRING')
         items3 = create_items(3)
-        assert items3[0].startswith('LINEARRING')
+        assert items3[0].startswith('POLYGON')
         items4 = create_items(4)
-        assert items4[0].startswith('POLYGON')
-        assert items4[1].startswith('POLYGON')
+        assert items4[0].startswith('MULTIPOLYGON')
         items5 = create_items(5)
-        assert items5[0].startswith('LINESTRING')
-        assert items5[1].startswith('LINESTRING')
+        assert items5[0].startswith('MULTILINESTRING')
         items6 = create_items(6)
-        assert items6[0].startswith('POINT')
-        assert items6[1].startswith('POINT')
+        assert items6[0].startswith('MULTIPOINT')
 
     def test_collection(self):
         wkt = WKT()
