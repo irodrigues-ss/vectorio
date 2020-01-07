@@ -3,6 +3,7 @@ setup.py
 tests/__init__.py
 tests/config.py
 vectorio/__init__.py
+vectorio/config.py
 vectorio/exceptions.py
 vectorio.egg-info/PKG-INFO
 vectorio.egg-info/SOURCES.txt

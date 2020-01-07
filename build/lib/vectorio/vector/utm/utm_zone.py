@@ -5,7 +5,7 @@ from osgeo.ogr import DataSource
 from vectorio.vector import (
     Shapefile as ShapefileLG, ShapefileAsZip, WKT
 )
-from config import STATIC_DIR
+from vectorio.config import STATIC_DIR
 from vectorio.vector.exceptions import (
     ErrorOnIntersection, ExistsManyGeometriesTypes, PointIsNotSupported
 )
