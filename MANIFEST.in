@@ -1,1 +1,1 @@
-recursive-include vectorio/assets/ *
+recursive-include vectorio/_assets/ *

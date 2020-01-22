@@ -20,8 +20,6 @@ setup(name='vectorio',
         'rarfile==3.1',
     ],
     include_package_data=True,
-    data_files=[('', ['vectorio/assets/World_UTM_Grid_HM.zip'])],
-    # package_data={'vectorio/assets': ['assets/*.zip']},
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.6",
