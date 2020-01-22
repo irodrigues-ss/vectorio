@@ -1,4 +1,3 @@
-MANIFEST.in
 README.md
 setup.py
 tests/__init__.py
@@ -12,7 +11,6 @@ vectorio.egg-info/dependency_links.txt
 vectorio.egg-info/not-zip-safe
 vectorio.egg-info/requires.txt
 vectorio.egg-info/top_level.txt
-vectorio/_assets/World_UTM_Grid_HM.zip
 vectorio/gdal/__init__.py
 vectorio/gdal/exceptions.py
 vectorio/gdal/error/__init__.py
