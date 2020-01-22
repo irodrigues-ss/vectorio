@@ -15,4 +15,4 @@ def get_root_project(directory):
 
 
 ROOT_PROJECT = get_root_project(__file__)
-STATIC_DIR = os.path.join(ROOT_PROJECT, 'assets')
+STATIC_DIR = os.path.join(ROOT_PROJECT, 'vectorio', 'assets')

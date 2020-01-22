@@ -1,6 +1,5 @@
 README.md
 setup.py
-assets/World_UTM_Grid_HM.zip
 tests/__init__.py
 tests/config.py
 vectorio/__init__.py

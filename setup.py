@@ -19,7 +19,8 @@ setup(name='vectorio',
     install_requires=[
         'rarfile==3.1',
     ],
-    data_files=[('assets', ['vectorio/assets/World_UTM_Grid_HM.zip'])],
+    # data_files=[('assets', ['assets/World_UTM_Grid_HM.zip'])],
+    package_data={'vectorio/assets': ['assets/*.zip']},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3.6",
