@@ -6,7 +6,7 @@ import os
 def get_root_project(directory):
     path = os.path.abspath(directory)
     if os.path.isdir(path):
-        if "setup.py" in os.listdir(path):
+        if "vectorio" in os.listdir(path):
             return path
         else:
             return get_root_project(os.path.dirname(path))

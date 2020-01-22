@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: vectorio
-Version: 1.1.2
+Version: 1.2.0
 Summary: Geoprocessing utility for working with vector data
 Home-page: https://github.com/igor-rodrigues-ss/vectorio
 Author: Igor Rodrigues Sousa Silva
@@ -57,6 +57,7 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         - [Reprojecting a vector](#read-and-write-wkt)
         - [Quickly switching between geographic data](#quickly-switching-between-geographic-data)
         - [Raise exception for warnings from gdal](#raise-exception-for-warnings-from-gdal)
+        - [Search UTM Zone from Geometry](#search-utm-zone-from-geometry)
         
         #### Read and Write Geojson
         
@@ -348,6 +349,16 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         vector.write(data, 'output.zip')
         ```
         
+        ##### Search UTM Zone from Geometry
+        
+        ```python
+        from vectorio.vector import UTMZone
+        ds_wkt = VectorReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
+        
+        self.utm.zone_from_biggest_geom(ds_wkt) == '22SW'
+        self.utm.zones(ds_wkt)
+        ```
+        
         <br/>
         
         #### Raise Exception for Warnings From Gdal
@@ -383,7 +394,10 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         
         
 Platform: UNKNOWN
-Classifier: Programming Language :: Python :: 3
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: Implementation 
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.6

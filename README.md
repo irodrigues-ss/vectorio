@@ -49,6 +49,7 @@ pip3 install gdal==<gdal_version>
 - [Reprojecting a vector](#read-and-write-wkt)
 - [Quickly switching between geographic data](#quickly-switching-between-geographic-data)
 - [Raise exception for warnings from gdal](#raise-exception-for-warnings-from-gdal)
+- [Search UTM Zone from Geometry](#search-utm-zone-from-geometry)
 
 #### Read and Write Geojson
 
@@ -338,6 +339,16 @@ for geom in vector.items(data):
 
 ```python
 vector.write(data, 'output.zip')
+```
+
+##### Search UTM Zone from Geometry
+
+```python
+from vectorio.vector import UTMZone
+ds_wkt = VectorReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
+
+self.utm.zone_from_biggest_geom(ds_wkt) == '22SW'
+self.utm.zones(ds_wkt)
 ```
 
 <br/>
