@@ -343,12 +343,14 @@ vector.write(data, 'output.zip')
 
 ##### Search UTM Zone from Geometry
 
-```python
-from vectorio.vector import UTMZone
-ds_wkt = VectorReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
+- This functionality will search the UTM Zone from some geometry.
 
-self.utm.zone_from_biggest_geom(ds_wkt) == '22SW'
-self.utm.zones(ds_wkt)
+```python
+from vectorio.vector import UTMZone, VectorReprojected, WKT
+ds_wkt = VectorReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
+utm = UTMZone()
+utm.zone_from_biggest_geom(ds_wkt) == '22SW' # getting one UTM Zone
+utm.zones(ds_wkt) # getting all UTM Zones that intersect with the geometry
 ```
 
 <br/>
