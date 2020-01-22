@@ -19,15 +19,17 @@ setup(name='vectorio',
     install_requires=[
         'rarfile==3.1',
     ],
+    include_package_data=True,
     data_files=[('', ['vectorio/assets/World_UTM_Grid_HM.zip'])],
     # package_data={'vectorio/assets': ['assets/*.zip']},
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: Implementation ",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Development Status :: 5 - Production/Stable",
     ],
-    python_requires='>=3.6'
+    python_requires='>=3.6',
+    zip_safe=False,
 )

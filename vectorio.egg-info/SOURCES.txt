@@ -1,3 +1,4 @@
+MANIFEST.in
 README.md
 setup.py
 tests/__init__.py
@@ -8,6 +9,7 @@ vectorio/exceptions.py
 vectorio.egg-info/PKG-INFO
 vectorio.egg-info/SOURCES.txt
 vectorio.egg-info/dependency_links.txt
+vectorio.egg-info/not-zip-safe
 vectorio.egg-info/requires.txt
 vectorio.egg-info/top_level.txt
 vectorio/assets/World_UTM_Grid_HM.zip

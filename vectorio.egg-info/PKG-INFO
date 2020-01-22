@@ -396,11 +396,11 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         
         
 Platform: UNKNOWN
-Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: Implementation 
-Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 5 - Production/Stable
 Requires-Python: >=3.6
 Description-Content-Type: text/markdown
