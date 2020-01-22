@@ -1,0 +1,3 @@
+recursive-include vectorio/_assets/ *
+recursive-include tests *
+recursive-exclude * __pycache__
