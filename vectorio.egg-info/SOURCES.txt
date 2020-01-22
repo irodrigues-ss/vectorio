@@ -10,6 +10,7 @@ vectorio.egg-info/SOURCES.txt
 vectorio.egg-info/dependency_links.txt
 vectorio.egg-info/requires.txt
 vectorio.egg-info/top_level.txt
+vectorio/assets/World_UTM_Grid_HM.zip
 vectorio/gdal/__init__.py
 vectorio/gdal/exceptions.py
 vectorio/gdal/error/__init__.py
