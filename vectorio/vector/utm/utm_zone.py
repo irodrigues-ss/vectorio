@@ -7,7 +7,7 @@ from vectorio.vector import (
 )
 from vectorio.config import STATIC_DIR
 from vectorio.vector.exceptions import (
-    ErrorOnIntersection, ExistsManyGeometriesTypes, PointIsNotSupported
+    ErrorOnIntersection, ExistsManyGeometriesTypes
 )
 
 
@@ -72,12 +72,8 @@ class UTMZone:
                 area_or_length = feat.geometry().Area()
             elif geom_type == 'LINESTRING':
                 area_or_length = feat.geometry().Length()
-            elif geom_type == 'POINT':
-                raise PointIsNotSupported(
-                    "Operation not supported for Point geometry."
-                )
             else:
-                pass
+                area_or_length = 0
 
             indexes_from_feats.append(idx_feat)
             metrics.append(area_or_length)

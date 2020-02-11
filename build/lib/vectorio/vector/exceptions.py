@@ -38,7 +38,7 @@ class DirectoryDoesNotExists(Exception):
 
 
 class ImpossibleCreateShapefileFromGeometryCollection(Exception):
-	pass
+    pass
 
 
 class ErrorOnIntersection(Exception):
@@ -46,8 +46,4 @@ class ErrorOnIntersection(Exception):
 
 
 class ExistsManyGeometriesTypes(Exception):
-    pass
-
-
-class PointIsNotSupported(Exception):
     pass
