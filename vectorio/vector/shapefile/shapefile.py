@@ -21,16 +21,17 @@ from uuid import uuid4
 from vectorio.vector._src.gdal_aux.cloned_ds import (
     GDALClonedDataSource
 )
-
-os.environ['SHAPE_ENCODING'] = "UTF-8"
+from vectorio.vector.shapefile.encodings import ShapeEncodings
 
 
 class Shapefile(IVectorFile):
 
     _driver = None
+    _shape_encoding = None
 
     def __init__(self):
         self._driver = ogr.GetDriverByName('ESRI Shapefile')
+        self._shape_encoding = ShapeEncodings()
 
     def _has_data(self, ds: DataSource):
         lyr = ds.GetLayer()
@@ -42,6 +43,8 @@ class Shapefile(IVectorFile):
     def datasource(self, fpath: str) -> DataSource:
         if not os.path.exists(fpath):
             raise FileNotFound(f'"{fpath}" does not exists.')
+
+        self._shape_encoding.define_encoding(fpath)
 
         ds = self._driver.Open(fpath)
         if ds is None:

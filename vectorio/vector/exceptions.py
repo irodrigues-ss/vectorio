@@ -47,3 +47,8 @@ class ErrorOnIntersection(Exception):
 
 class ExistsManyGeometriesTypes(Exception):
     pass
+
+
+class ErrorOnReadDBF(Exception):
+    pass
+
