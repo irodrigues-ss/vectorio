@@ -61,7 +61,9 @@ class WKT(IVectorData):
 
         for idx_feat in range(lyr.GetFeatureCount()):
             feat = lyr.GetFeature(idx_feat)
-            yield feat.geometry().ExportToWkt()
+            geom = feat.geometry()
+            if geom is not None:
+                yield geom.ExportToWkt()
 
     def collection(self, ds: DataSource) -> str:
         out_wkt = reduce(

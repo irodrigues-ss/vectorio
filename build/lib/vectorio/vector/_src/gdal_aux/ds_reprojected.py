@@ -54,9 +54,10 @@ class DataSourceReprojected:
 
         while in_feature:
             geom = in_feature.GetGeometryRef()
-            geom.Transform(coord_transformator)
-            gdal_feature = GDALClonedFeature(outLayerDefn, geom, in_feature)
-            out_lyr.CreateFeature(gdal_feature.ref())
+            if geom is not None:
+                geom.Transform(coord_transformator)
+                gdal_feature = GDALClonedFeature(outLayerDefn, geom, in_feature)
+                out_lyr.CreateFeature(gdal_feature.ref())
             in_feature = inp_lyr.GetNextFeature()
 
         return out_ds

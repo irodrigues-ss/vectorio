@@ -3,7 +3,6 @@
 import os
 import tempfile
 import shutil
-import pytest
 import json
 from vectorio.vector import (
     Shapefile, ShapefileAsZip, ShapefileAsRar, Geojson

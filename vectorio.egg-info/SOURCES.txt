@@ -41,6 +41,7 @@ vectorio/vector/interfaces/ivector_file.py
 vectorio/vector/metrics/__init__.py
 vectorio/vector/metrics/vertices.py
 vectorio/vector/shapefile/__init__.py
+vectorio/vector/shapefile/encodings.py
 vectorio/vector/shapefile/file_required_by_extension.py
 vectorio/vector/shapefile/shapefile.py
 vectorio/vector/shapefile/decorators/__init__.py

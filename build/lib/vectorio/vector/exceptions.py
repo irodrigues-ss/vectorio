@@ -1,6 +1,10 @@
 #!-*-coding:utf-8-*-
 
 
+class CharDecodeError(Exception):
+    pass
+
+
 class FileNotFound(Exception):
     pass
 
@@ -47,3 +51,4 @@ class ErrorOnIntersection(Exception):
 
 class ExistsManyGeometriesTypes(Exception):
     pass
+

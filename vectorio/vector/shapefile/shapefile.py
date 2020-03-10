@@ -2,8 +2,8 @@
 
 import os
 import json
-from functools import reduce
 from typing import Generator
+from uuid import uuid4
 from osgeo import ogr, osr
 from osgeo.ogr import DataSource, Feature
 from vectorio.vector.interfaces.ivector_file import IVectorFile
@@ -17,7 +17,6 @@ from vectorio.vector.exceptions import (
 from vectorio.vector.shapefile.file_required_by_extension import (
     FileRequiredByExtension
 )
-from uuid import uuid4
 from vectorio.vector._src.gdal_aux.cloned_ds import (
     GDALClonedDataSource
 )
@@ -28,10 +27,14 @@ class Shapefile(IVectorFile):
 
     _driver = None
     _shape_encoding = None
+    _search_encoding = None
 
-    def __init__(self):
+    def __init__(self, search_encoding=True, search_encoding_exception=True):
         self._driver = ogr.GetDriverByName('ESRI Shapefile')
-        self._shape_encoding = ShapeEncodings()
+        self._search_encoding = search_encoding
+        self._shape_encoding = ShapeEncodings(
+            raise_exception=search_encoding_exception
+        )
 
     def _has_data(self, ds: DataSource):
         lyr = ds.GetLayer()
@@ -44,9 +47,13 @@ class Shapefile(IVectorFile):
         if not os.path.exists(fpath):
             raise FileNotFound(f'"{fpath}" does not exists.')
 
-        self._shape_encoding.define_encoding(fpath)
+        if self._search_encoding:
+            os.environ['SHAPE_ENCODING'] = self._shape_encoding.from_file(
+                fpath.replace('.shp', '.dbf')  # getting path from .dbf
+            )
 
         ds = self._driver.Open(fpath)
+
         if ds is None:
             raise ShapefileInvalid(
                 'Shapefile invalid. Please, check if your shapefile is correct'
@@ -55,13 +62,16 @@ class Shapefile(IVectorFile):
         self._has_data(ds)
         return GDALClonedDataSource(ds).ref()
 
+    def _export_json(self, feat: Feature) -> str:
+        return json.dumps(
+            json.loads(feat.ExportToJson()), ensure_ascii=False
+        )
+
     def items(self, datasource: DataSource) -> Generator[str, None, None]:
         lyr = datasource.GetLayer(0)
         for idx_feat in range(lyr.GetFeatureCount()):
             feat = lyr.GetFeature(idx_feat)
-            yield json.dumps(
-                json.loads(feat.ExportToJson()), ensure_ascii=False
-            )
+            yield self._export_json(feat)
 
     def collection(self, datasource: DataSource) -> str:
         return FeatureCollectionConcatenated(self.items(datasource))
