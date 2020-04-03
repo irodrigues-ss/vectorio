@@ -52,3 +52,14 @@ class ErrorOnIntersection(Exception):
 class ExistsManyGeometriesTypes(Exception):
     pass
 
+
+class DataSourceNotIntersectsWithAnyUTMZones(Exception):
+    pass
+
+
+class SRIDNotFound(Exception):
+    pass
+
+
+class WKTPRJNotFound(Exception):
+    pass

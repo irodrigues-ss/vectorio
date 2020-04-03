@@ -3,9 +3,7 @@
 import os
 from tests.config import FILESDIR_FROM_FIXTURES
 from vectorio.vector import Shapefile
-from vectorio.vector._src.gdal_aux.ds_reprojected import (
-    DataSourceReprojected
-)
+from vectorio.vector import DataSourceReprojected
 from vectorio.vector import ShapefileAsZip
 
 

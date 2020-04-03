@@ -21,6 +21,7 @@ from vectorio.vector._src.gdal_aux.cloned_ds import (
     GDALClonedDataSource
 )
 from vectorio.vector.shapefile.encodings import ShapeEncodings
+from vectorio.config import GDAL_DRIVERS_NAME
 
 
 class Shapefile(IVectorFile):
@@ -30,7 +31,7 @@ class Shapefile(IVectorFile):
     _search_encoding = None
 
     def __init__(self, search_encoding=True, search_encoding_exception=True):
-        self._driver = ogr.GetDriverByName('ESRI Shapefile')
+        self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['ESRI Shapefile'])
         self._search_encoding = search_encoding
         self._shape_encoding = ShapeEncodings(
             raise_exception=search_encoding_exception

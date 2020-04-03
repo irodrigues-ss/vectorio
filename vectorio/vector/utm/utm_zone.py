@@ -7,8 +7,10 @@ from vectorio.vector import (
 )
 from vectorio.config import STATIC_DIR
 from vectorio.vector.exceptions import (
-    ErrorOnIntersection, ExistsManyGeometriesTypes
+    ErrorOnIntersection, ExistsManyGeometriesTypes, DataSourceNotIntersectsWithAnyUTMZones
 )
+from vectorio.config import GDAL_DRIVERS_NAME, PRJ_WGS84
+from vectorio.vector import DataSourceReprojected
 
 
 class UTMZone:
@@ -23,7 +25,7 @@ class UTMZone:
         ).datasource(
             os.path.join(STATIC_DIR, 'World_UTM_Grid_HM.zip')
         )
-        self._drv_mem = ogr.GetDriverByName('MEMORY')
+        self._drv_mem = ogr.GetDriverByName(GDAL_DRIVERS_NAME['MEMORY'])
 
     def _intersection_ds(self, ds_utm: DataSource, inp_ds: DataSource):
         lyr_utm = ds_utm.GetLayer(0)
@@ -49,26 +51,31 @@ class UTMZone:
             result.add(zone)
         return result
 
-    def zone_from_biggest_geom(self, inp_ds: DataSource):
-        ds = self._intersection_ds(self._world_utm_grid_ds, inp_ds)
+    def zone_from_biggest_geom(self, inp_ds: DataSource, wkt_prj_for_metrics: str, in_wkt_prj=PRJ_WGS84):
+        inter_ds = self._intersection_ds(self._world_utm_grid_ds, inp_ds)
+        inter_lyr = inter_ds.GetLayer()
+
+        if inter_lyr.GetFeatureCount() == 0:
+            raise DataSourceNotIntersectsWithAnyUTMZones(
+                'The datasource not intersect with UTM Zones. Please, check '
+                'if "in_wkt_prj" is equivalent to Datum from datasource. Use '
+                'Datuns for this operations.'
+            )
+
+        ds = DataSourceReprojected(
+            inter_ds, in_wkt_prj=in_wkt_prj,
+            out_wkt_prj=wkt_prj_for_metrics, use_wkt_prj=True
+        ).ref()
         biggest_part_idx = 0
         indexes_from_feats = []  # all indexes from features
         metrics = []  # area or length of the geometry from feature
-        all_geom_type = set()
         lyr = ds.GetLayer(0)
 
         for idx_feat in range(lyr.GetFeatureCount()):
             feat = lyr.GetFeature(idx_feat)
             geom_type = feat.geometry().GetGeometryName()
             area_or_length = 0
-            all_geom_type.add(geom_type)
-
-            if len(all_geom_type) != 1:
-                # validating if the geometries types are from same type
-                raise ExistsManyGeometriesTypes(
-                    "Many geometries types are not supported."
-                )
-
+        
             if geom_type == 'POLYGON':
                 area_or_length = feat.geometry().Area()
             elif geom_type == 'LINESTRING':
@@ -85,6 +92,6 @@ class UTMZone:
                 max(metrics)  # getting max area or length
             )
         ]
-        feat = lyr.GetFeature(biggest_part_idx)
+        feat = lyr.GetFeature(biggest_part_idx) # big geometry
         zone = f'{feat.GetFieldAsInteger("ZONE")}{feat.GetFieldAsString("HEMISPHERE")}'
         return zone

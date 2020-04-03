@@ -10,6 +10,7 @@ from osgeo.ogr import Geometry, DataSource, Feature
 from vectorio.vector.interfaces.ivector_data import IVectorData
 from vectorio.vector.exceptions import WKTInvalid
 from vectorio.vector.wkt.geom_type_factory import GeometryTypeFactory
+from vectorio.config import GDAL_DRIVERS_NAME
 
 
 GEOMETRYCOLLECTION_PREFIX = 'GEOMETRYCOLLECTION'
@@ -21,7 +22,7 @@ class WKT(IVectorData):
     _initial_srid = 0
     _as_geometry_collection = True
 
-    def __init__(self, as_geometry_collection: bool=True, srid: int=4326):
+    def __init__(self, as_geometry_collection=True, srid=4326):
         self._gt_factory = GeometryTypeFactory()
         self._initial_srid = srid
         self._as_geometry_collection = as_geometry_collection
@@ -32,7 +33,7 @@ class WKT(IVectorData):
         return srs
 
     def datasource(self, input_data: str) -> DataSource:
-        drv = ogr.GetDriverByName('MEMORY')
+        drv = ogr.GetDriverByName(GDAL_DRIVERS_NAME['MEMORY'])
         out_ds = drv.CreateDataSource(str(uuid4()))
         geom = None
         if not bool(input_data):
@@ -58,6 +59,8 @@ class WKT(IVectorData):
 
     def items(self, ds: DataSource) -> Generator[str, None, None]:
         lyr = ds.GetLayer(0)
+        if lyr.GetFeatureCount() == 0:
+            yield 'GEOMETRY_EMPTY'
 
         for idx_feat in range(lyr.GetFeatureCount()):
             feat = lyr.GetFeature(idx_feat)
@@ -69,6 +72,9 @@ class WKT(IVectorData):
         out_wkt = reduce(
             lambda x,y: x + ',' + y, self.items(ds)
         )
+        if out_wkt == 'GEOMETRY_EMPTY':
+            return 'GEOMETRY_EMPTY'
+
         if out_wkt.startswith(GEOMETRYCOLLECTION_PREFIX):
             return out_wkt
         else:

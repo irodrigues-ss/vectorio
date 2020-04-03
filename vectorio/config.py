@@ -16,3 +16,10 @@ def get_root_project(directory):
 
 ROOT_PROJECT = get_root_project(__file__)
 STATIC_DIR = os.path.join(ROOT_PROJECT, 'vectorio', '_assets')
+GDAL_DRIVERS_NAME = {
+    'MEMORY': 'MEMORY',
+    'ESRI Shapefile': 'ESRI Shapefile',
+    'GeoJSON': 'GeoJSON'
+}
+
+PRJ_WGS84='GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'

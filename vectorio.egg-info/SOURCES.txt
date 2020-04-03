@@ -23,13 +23,14 @@ vectorio/vector/_src/gdal_aux/__init__.py
 vectorio/vector/_src/gdal_aux/cloned_ds.py
 vectorio/vector/_src/gdal_aux/cloned_feature.py
 vectorio/vector/_src/gdal_aux/cloned_layer.py
-vectorio/vector/_src/gdal_aux/ds_reprojected.py
 vectorio/vector/_src/generators/__init__.py
 vectorio/vector/_src/generators/feature_collection_concatenated.py
 vectorio/vector/composite/__init__.py
 vectorio/vector/composite/vector_composite.py
 vectorio/vector/composite/interfaces/__init__.py
 vectorio/vector/composite/interfaces/ivector_composite.py
+vectorio/vector/datasource/__init__.py
+vectorio/vector/datasource/ds_reprojected.py
 vectorio/vector/geofile/__init__.py
 vectorio/vector/geofile/geo_file.py
 vectorio/vector/geojson/__init__.py
