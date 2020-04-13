@@ -51,7 +51,11 @@ vectorio/vector/shapefile/decorators/shapefile_as_zip.py
 vectorio/vector/shapefile/interfaces/__init__.py
 vectorio/vector/shapefile/interfaces/ifile_required_by_extension.py
 vectorio/vector/srs/__init__.py
+vectorio/vector/srs/isrs.py
 vectorio/vector/srs/reprojection.py
+vectorio/vector/srs/srid.py
+vectorio/vector/srs/srs.py
+vectorio/vector/srs/wkt_prj.py
 vectorio/vector/utm/__init__.py
 vectorio/vector/utm/utm_zone.py
 vectorio/vector/wkt/__init__.py

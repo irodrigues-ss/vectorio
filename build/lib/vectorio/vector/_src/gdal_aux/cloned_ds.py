@@ -2,7 +2,7 @@
 
 from osgeo import ogr
 from osgeo.ogr import DataSource
-
+from vectorio.config import GDAL_DRIVERS_NAME
 
 class GDALClonedDataSource:
 
@@ -11,7 +11,7 @@ class GDALClonedDataSource:
     _LYR_NAME = 'Cloned Layer 01'
 
     def __init__(self, inp_ds: DataSource):
-        self._driver_mem = ogr.GetDriverByName('MEMORY')
+        self._driver_mem = ogr.GetDriverByName(GDAL_DRIVERS_NAME['MEMORY'])
         self._inp_ds = inp_ds
 
     def ref(self):

@@ -1,11 +1,14 @@
 #!-*-coding:utf-8-*-
 
+from uuid import uuid4
 from osgeo import ogr, osr
-from osgeo.ogr import DataSource
+from osgeo.ogr import DataSource, Layer
+from osgeo.osr import SpatialReference
 from vectorio.vector._src.gdal_aux.cloned_feature import GDALClonedFeature
 from vectorio.vector._src.gdal_aux.cloned_layer import GDALClonedLayer
 from vectorio.vector.exceptions import DataSourceWithoutSpatialRef
-from uuid import uuid4
+from vectorio.config import GDAL_DRIVERS_NAME
+from vectorio.vector.srs.srs import SRS
 
 
 class DataSourceReprojected:
@@ -13,40 +16,30 @@ class DataSourceReprojected:
     _inp_ds = None
     _in_srid = None
     _out_srid = None
+    _in_wkt_prj = None
+    _out_wkt_prj = None
+    _use_wkt_prj = None
 
     def __init__(
-        self, inp_ds: DataSource, in_srid: int=None, out_srid: int=None
+        self, inp_ds: DataSource, in_srid=None, out_srid=None,
+        in_wkt_prj=None, out_wkt_prj=None, use_wkt_prj=False
     ):
-        assert out_srid != None, 'Is required output SRID'
         self._inp_ds = inp_ds
         self._in_srid = in_srid
         self._out_srid = out_srid
-        self._driver_mem = ogr.GetDriverByName('MEMORY')
-
-    def _create_coord_transformator(self, lyr):
-        in_spatial_ref = None
-
-        if self._in_srid is None:
-            # getting spatial ref from datasource
-            in_spatial_ref = lyr.GetSpatialRef()
-
-            if in_spatial_ref is None:
-                raise DataSourceWithoutSpatialRef(
-                    f'The datasource {self._inp_ds.name} not have spatial'
-                    ' reference. Plese, use the input SRID.'
-                )
-
-        else:
-            in_spatial_ref = osr.SpatialReference()
-            in_spatial_ref.ImportFromEPSG(self._in_srid)
-
-        out_spatial_ref = osr.SpatialReference()
-        out_spatial_ref.ImportFromEPSG(self._out_srid)
-        return osr.CoordinateTransformation(in_spatial_ref, out_spatial_ref)
+        self._in_wkt_prj = in_wkt_prj
+        self._out_wkt_prj = out_wkt_prj
+        self._use_wkt_prj = use_wkt_prj
+        self._driver_mem = ogr.GetDriverByName(GDAL_DRIVERS_NAME['MEMORY'])
 
     def ref(self):
         inp_lyr = self._inp_ds.GetLayer()
-        coord_transformator = self._create_coord_transformator(inp_lyr)
+        srs = SRS(
+            self._inp_ds.name, inp_lyr, self._in_srid, self._out_srid,
+            self._in_wkt_prj, self._out_wkt_prj, self._use_wkt_prj
+        )
+
+        coord_transformator = srs.coord_transformator()
         out_ds = self._driver_mem.CreateDataSource(str(uuid4()))
         out_lyr = GDALClonedLayer(out_ds, inp_lyr).ref()
         outLayerDefn = out_lyr.GetLayerDefn()

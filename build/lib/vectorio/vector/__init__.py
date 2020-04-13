@@ -1,3 +1,4 @@
+from vectorio.vector.datasource.ds_reprojected import DataSourceReprojected
 from vectorio.vector.shapefile.shapefile import Shapefile
 from vectorio.vector.shapefile.decorators.shapefile_as_zip import ShapefileAsZip
 from vectorio.vector.shapefile.decorators.shapefile_as_rar import ShapefileAsRar

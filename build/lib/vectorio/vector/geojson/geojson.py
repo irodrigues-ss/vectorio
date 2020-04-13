@@ -10,14 +10,14 @@ from vectorio.vector.exceptions import GeojsonInvalid
 from vectorio.vector._src.generators.feature_collection_concatenated import (
     FeatureCollectionConcatenated
 )
-
+from vectorio.config import GDAL_DRIVERS_NAME
 
 class Geojson(IVectorData):
 
     _driver = None
 
     def __init__(self):
-        self._driver = ogr.GetDriverByName('GeoJSON')
+        self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['GeoJSON'])
 
     def datasource(self, input_data: str) -> DataSource:
         ds = self._driver.Open(input_data)

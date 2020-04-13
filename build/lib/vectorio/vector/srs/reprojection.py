@@ -4,9 +4,7 @@ from typing import Generator
 from osgeo.ogr import DataSource
 from osgeo import ogr, osr
 from vectorio.vector.interfaces.ivector import IVector
-from vectorio.vector._src.gdal_aux.ds_reprojected import (
-    DataSourceReprojected
-)
+from vectorio.vector import DataSourceReprojected
 
 
 class VectorReprojected(IVector):
