@@ -54,10 +54,12 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         - [Read and write geojson](#read-and-write-geojson)
         - [Read and write WKT](#read-and-write-wkt)
         - [Read and write Shapefile](#read-and-write-wkt)
-        - [Reprojecting a vector](#read-and-write-wkt)
+        - [Reprojecting a vector](#reprojecting-a-vector)
         - [Quickly switching between geographic data](#quickly-switching-between-geographic-data)
-        - [Raise exception for warnings from gdal](#raise-exception-for-warnings-from-gdal)
         - [Search UTM Zone from Geometry](#search-utm-zone-from-geometry)
+        - [Raise exception for warnings from gdal](#raise-exception-for-warnings-from-gdal)
+        - [Reprojecting a datasource directly](#reprojecting-a-datasource-directly)
+        - [Counting Vertices](#counting-vertices)
         
         #### Read and Write Geojson
         
@@ -357,9 +359,23 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         from vectorio.vector import UTMZone, VectorReprojected, WKT
         ds_wkt = VectorReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
         utm = UTMZone()
-        utm.zone_from_biggest_geom(ds_wkt) == '22SW' # getting one UTM Zone
         utm.zones(ds_wkt) # getting all UTM Zones that intersect with the geometry
         ```
+        
+        - The method **zone_from_biggest_geom** get only one zone that has the biggest geometry. For example, if a large geometry is in UTM Zone 25N or 26N, this method will calculate the area (for polygon) or length (for line) of geometry and return the UTM Zone where the area or length is the biggest.
+        
+        - **Signature**: *zone_from_biggest_geom(self, inp_ds: DataSource, wkt_prj_for_metrics: str, in_wkt_prj=PRJ_WGS84)*
+            - *wkt_prj_for_metrics*: required
+            - *inp_ds*: required
+            - *in_wkt_prj*: Optional. Used case the input datasource no has a CRS.
+        
+        ```python
+        # out_wkt_prj - necessary for make metrics calculations
+        out_wkt_prj = 'PROJCS["Brazil / Albers Equal Area Conic (WGS84)",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Albers_Conic_Equal_Area"],PARAMETER["longitude_of_center",-50.0],PARAMETER["standard_parallel_1",10.0],PARAMETER["standard_parallel_2",-40.0],PARAMETER["latitude_of_center",-25.0],UNIT["Meter",1.0]]'
+        utm.zone_from_biggest_geom(ds_wkt, out_wkt_prj=out_wkt_prj) # getting one UTM Zone
+        ```
+        
+        - Points are ignored in this calculation. This method isn't remomended for geometries composed only by Points, (MultiPoint, GeometryCollection of points e etc.), because, the UTM zone returned is based in area/lenth metrics. Soon, will be implemented a method for get UTM Zone only for Point Geometries. 
         
         <br/>
         
@@ -393,7 +409,59 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         
         **Obs:** All the exceptions are available on package *vectorio.exceptions*
         
+        #### Reprojecting a datasource directly
         
+        - To make spatial reprojection use the class VectorReprojected [metioned above](#reprojecting-a-vector). However, in same moment will be necessary reproject a datasource directly, for this use the DataSourceReprojected class.
+        
+        - **Signature**: *DataSourceReprojected(inp_ds: DataSource, in_srid: int=None, out_srid: int=None, in_wkt_prj=None, out_wkt_prj=None, use_wkt_prj: bool=False)*
+            - **inp_ds**: required. Datasource that will be reprojected.
+            - **in_srid**: optional. Used case the input datasource not has a CRS. (Used only when the flag **use_wkt_prj** is *False*).
+            - **out_srid**: Required whether the **use_wkt_prj** is *False*.
+            - **in_wkt_prj**: optional. WKT Projection on OGC pattern. Used case the input datasource not has a CRS. (Used only when the flag **use_wkt_prj** is *True*).
+            - **out_wkt_prj**: Required whether the **use_wkt_prj** is *True*. WKT Projection on OGC pattern.
+            - **use_wkt_prj**: Boolean to define whether the datasource will be reprojected with SRID our with the WKT Projection.
+        
+        - Methods:
+            - **ref() -> DataSource**: Return the DataSource reprojected.
+        
+        - Reprojecting with SRID.
+        
+        ```python
+        from vectorio.vector import WKT, DataSourceReprojected
+        wkt = WKT()
+        ds = wkt.datasource('POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))')
+        ds1 = DataSourceReprojected(ds, out_srid=31983).ref()
+        wkt.collection(ds1)
+        ```
+        - Reprojecting with WKT Projection.
+        
+        ```python
+        from vectorio.vector import WKT, DataSourceReprojected
+        wkt = WKT()
+        prj = 'PROJCS["SIRGAS 2000 / UTM zone 23S",GEOGCS["SIRGAS 2000",DATUM["Sistema_de_Referencia_Geocentrico_para_America_del_Sur_2000",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6674"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4674"]],UNIT["metre",1,AUTHORITY["EPSG","9001"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-45],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",10000000],AUTHORITY["EPSG","31983"],AXIS["Easting",EAST],AXIS["Northing",NORTH]]'
+        ds = wkt.datasource('POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))')
+        ds2 = DataSourceReprojected(ds, out_wkt_prj=prj, use_wkt_prj=True).ref()
+        wkt.collection(ds2)
+        ```
+        
+        #### Counting Vertices
+        
+        All classes that are vector has the method for count all vertices. Below, are be exemplified
+         with a WKT, however, this method works with Shapefile, GeoJson too.
+        
+        - **Signature**: *vertices_by_feature(ds: DataSource) -> dict*
+            - ds: Required. DataSource for count your vertices.
+        
+        - **Return**:
+            - Will be returned a dictionary of vertices by feature.
+        
+        ```python
+        from vectorio.vector import WKT
+        wkt = WKT() 
+        ds = wkt.datasource('POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))')
+        wkt.vertices_by_feature(ds) # works with shapefile or Geojson 
+        # shapefile_obj.vertices_by_feature() or geojson_obj.vertices_by_feature()
+        ```
         
 Platform: UNKNOWN
 Classifier: License :: OSI Approved :: MIT License

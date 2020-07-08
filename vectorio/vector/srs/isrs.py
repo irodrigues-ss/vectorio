@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 from osgeo.osr import SpatialReference
 from osgeo.ogr import Layer
+from vectorio.exceptions import DataSourceWithoutSpatialRef
 
 
 class ISRS(ABC):
