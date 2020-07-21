@@ -32,6 +32,8 @@ class Shapefile(IVectorFile):
     _search_encoding = None
     _srid = None
 
+    # TODO: add srid in documentation
+
     def __init__(self, search_encoding=True, search_encoding_exception=True, srid: int=None):
         self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['ESRI Shapefile'])
         self._search_encoding = search_encoding
