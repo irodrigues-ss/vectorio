@@ -22,6 +22,7 @@ from vectorio.vector._src.gdal_aux.cloned_ds import (
 )
 from vectorio.vector.shapefile.encodings import ShapeEncodings
 from vectorio.config import GDAL_DRIVERS_NAME
+from osgeo import osr
 
 
 class Shapefile(IVectorFile):
@@ -29,13 +30,15 @@ class Shapefile(IVectorFile):
     _driver = None
     _shape_encoding = None
     _search_encoding = None
+    _srid = None
 
-    def __init__(self, search_encoding=True, search_encoding_exception=True):
+    def __init__(self, search_encoding=True, search_encoding_exception=True, srid: int=None):
         self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['ESRI Shapefile'])
         self._search_encoding = search_encoding
         self._shape_encoding = ShapeEncodings(
             raise_exception=search_encoding_exception
         )
+        self._srid = srid
 
     def _has_data(self, ds: DataSource):
         lyr = ds.GetLayer()
@@ -77,12 +80,12 @@ class Shapefile(IVectorFile):
     def collection(self, datasource: DataSource) -> str:
         return FeatureCollectionConcatenated(self.items(datasource))
 
-    def _create_prj(self, out_prj: str, feat: Feature):
-        srs = feat.geometry().GetSpatialReference()
-        with open(out_prj, 'w') as f:
-            f.write(srs.ExportToWkt())
+    # def _create_prj(self, out_prj: str, feat: Feature, srid: int):
+    #     srs = feat.geometry().GetSpatialReference()
+    #     with open(out_prj, 'w') as f:
+    #         f.write(srs.ExportToWkt())
 
-    def write(self, ds: DataSource, out_path: str,) -> str:
+    def write(self, ds: DataSource, out_path: str) -> str:
         assert out_path.endswith('.shp'), 'Output file have has .shp extension.'
         lyr = ds.GetLayer()
         feat = lyr.GetFeature(0)
@@ -94,11 +97,18 @@ class Shapefile(IVectorFile):
                 'collection with same geometry type.'
             )
         ds_out = self._driver.CreateDataSource(out_path)
-        ds_out.CopyLayer(ds.GetLayer(), str(uuid4()))
+        inp_lyr = ds.GetLayer()
+        proj = osr.SpatialReference()
+        proj.SetWellKnownGeogCS(f'EPSG:{self._srid}')
+        layer_out = ds_out.CreateLayer(str(uuid4()), srs=proj)
 
-        out_prj = out_path.replace('.shp', '.prj')
-        if not os.path.exists(out_prj):
-           self._create_prj(out_prj, feat)
+        for feat in inp_lyr:
+            layer_out.CreateFeature(feat)
 
         ds_out.Destroy()
         return out_path
+
+
+
+
+
