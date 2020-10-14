@@ -7,7 +7,7 @@ from osgeo import ogr
 from typing import Generator
 
 
-class TestWKT:
+class TestWKTValid:
 
     def setup_method(self):
         self.exp_data_lst = [
@@ -22,68 +22,70 @@ class TestWKT:
         self.wkt_fpath = '/tmp/test.wkt'
 
     def test_datasource(self):
-        wkt = WKT()
         for exp_data in self.exp_data_lst:
-            assert isinstance(wkt.datasource(exp_data), DataSource)
+            wkt = WKT(exp_data)
+            assert isinstance(wkt.datasource(), DataSource)
 
-    def test_items(self):
-        wkt = WKT()
+    # def test_geometries(self):
+    #
+    #     def create_items(idx_data: int):
+    #         result = []
+    #         wkt = WKT(self.exp_data_lst[idx_data])
+    #         for geom in wkt.geometries():
+    #             result.append(geom)
+    #         return result
+    #
+    #     items = create_items(0)
+    #     assert items[0].startswith('GEOMETRYCOLLECTION')
+    #     items1 = create_items(1)
+    #     assert items1[0].startswith('POINT')
+    #     items2 = create_items(2)
+    #     assert items2[0].startswith('LINESTRING')
+    #     items3 = create_items(3)
+    #     assert items3[0].startswith('POLYGON')
+    #     items4 = create_items(4)
+    #     assert items4[0].startswith('MULTIPOLYGON')
+    #     items5 = create_items(5)
+    #     assert items5[0].startswith('MULTILINESTRING')
+    #     items6 = create_items(6)
+    #     assert items6[0].startswith('MULTIPOINT')
 
-        def create_items(idx_data: int):
-            return [item for item in wkt.items(wkt.datasource(self.exp_data_lst[idx_data]))]
-
-        items = create_items(0)
-        assert items[0].startswith('GEOMETRYCOLLECTION')
-        items1 = create_items(1)
-        assert items1[0].startswith('POINT')
-        items2 = create_items(2)
-        assert items2[0].startswith('LINESTRING')
-        items3 = create_items(3)
-        assert items3[0].startswith('POLYGON')
-        items4 = create_items(4)
-        assert items4[0].startswith('MULTIPOLYGON')
-        items5 = create_items(5)
-        assert items5[0].startswith('MULTILINESTRING')
-        items6 = create_items(6)
-        assert items6[0].startswith('MULTIPOINT')
-
-    def test_collection(self):
-        wkt = WKT()
+    def test_geometry_collection(self):
         for exp_data in self.exp_data_lst:
-            ds = wkt.datasource(exp_data)
-            collection = wkt.collection(ds)
-            assert collection.startswith('GEOMETRYCOLLECTION')
-            assert collection.count('GEOMETRYCOLLECTION') == 1
+            wkt = WKT(exp_data)
+            geom_collection = wkt.geometry_collection()
+            assert geom_collection.startswith('GEOMETRYCOLLECTION')
+            assert geom_collection.count('GEOMETRYCOLLECTION') == 1
 
-    def test_collection_param_geom_collection(self):
-        wkt = WKT()
-        assert wkt.collection(
-            wkt.datasource(self.exp_data_lst[0])
-        ).startswith('GEOMETRYCOLLECTION')
-        wkt = WKT(as_geometry_collection=False)
-        assert wkt.collection(
-            wkt.datasource(self.exp_data_lst[1])
-        ).startswith('POINT')
+    def test_geometry_collection(self):
+        wkt = WKT(self.exp_data_lst[0])
+        assert wkt.geometry_collection().startswith('GEOMETRYCOLLECTION')
+        wkt = WKT(self.exp_data_lst[1], as_geometry_collection=False)
+        assert wkt.geometry_collection().startswith('POINT')
+
+    def test_geometry_collection_nmax(self):
+        wkt = WKT(self.exp_data_lst[0])
+        assert wkt.geometry_collection(1) == 'GEOMETRYCOLLECTION (POLYGON ((-51.0657999665975 -8.90375703340932,-47.1107218415975 -8.90375703340932,-47.1107218415975 -13.2155771434958,-51.0657999665975 -13.2155771434958,-51.0657999665975 -8.90375703340932)))'
 
     def test_collection_param_srid(self):
         srid = 4674
-        wkt = WKT(srid=srid)
-        ds = wkt.datasource(self.exp_data_lst[0])
+        wkt = WKT(self.exp_data_lst[0], srid=srid)
+        ds = wkt.datasource()
         lyr = ds.GetLayer(0)
         feat = lyr.GetFeature(0)
         srs = feat.geometry().GetSpatialReference()
         srs.AutoIdentifyEPSG()
         assert srs.GetAuthorityCode(None) == str(srid)
 
-    def test_write(self):
-        wkt = WKT()
-        ds = wkt.datasource(self.exp_data_lst[0])
-        fpath = wkt.write(ds, self.wkt_fpath)
-        assert os.path.exists(fpath)
-        geoc = wkt.collection(GeoFile(wkt).datasource(fpath))
-        assert geoc != ''
-        assert geoc.startswith('GEOMETRYCOLLECTION')
-
-    def teardown_method(self):
-        if os.path.exists(self.wkt_fpath):
-            os.remove(self.wkt_fpath)
+    # def test_write(self):
+    #     wkt = WKT()
+    #     ds = wkt.datasource(self.exp_data_lst[0])
+    #     fpath = wkt.write(ds, self.wkt_fpath)
+    #     assert os.path.exists(fpath)
+    #     geoc = wkt.collection(GeoFile(wkt).datasource(fpath))
+    #     assert geoc != ''
+    #     assert geoc.startswith('GEOMETRYCOLLECTION')
+    #
+    # def teardown_method(self):
+    #     if os.path.exists(self.wkt_fpath):
+    #         os.remove(self.wkt_fpath)

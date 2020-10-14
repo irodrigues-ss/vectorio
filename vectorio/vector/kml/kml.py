@@ -1,13 +1,9 @@
 
-
-from multipledispatch import dispatch as override
+import json
 from typing import Optional
 from osgeo.ogr import DataSource, Feature, Geometry
 from typeguard import typechecked, Generator
 from osgeo import ogr
-import json
-
-#from vectorio.vector._src.generators.feature_collection_concatenated import FeatureCollectionConcatenated
 from functools import reduce
 
 
@@ -49,7 +45,7 @@ class FeatureGeojson(str):
 class KML:
 
     @typechecked
-    def __init__(self, path: Optional[str] = None):
+    def __init__(self, path: str = None):
         self._path = path
         self._driver = ogr.GetDriverByName('KML')
 
@@ -61,7 +57,7 @@ class KML:
         return ds
 
     @typechecked
-    def features(self, nmax: int=None) -> Generator[FeatureGeojson, None, None]:
+    def features(self, nmax: int = None) -> Generator[FeatureGeojson, None, None]:
         ds = self.datasource()
         lyr = ds.GetLayer(0)
 
@@ -72,7 +68,7 @@ class KML:
                 break
 
     @typechecked
-    def geometries(self, nmax: int = None) -> Generator[GeometryGeojson, None, None]:
+    def geometries(self, nmax: Optional[int] = None) -> Generator[GeometryGeojson, None, None]:
         ds = self.datasource()
         lyr = ds.GetLayer(0)
 
