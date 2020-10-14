@@ -39,6 +39,8 @@ vectorio/vector/interfaces/__init__.py
 vectorio/vector/interfaces/ivector.py
 vectorio/vector/interfaces/ivector_data.py
 vectorio/vector/interfaces/ivector_file.py
+vectorio/vector/kml/__init__.py
+vectorio/vector/kml/kml.py
 vectorio/vector/metrics/__init__.py
 vectorio/vector/metrics/vertices.py
 vectorio/vector/shapefile/__init__.py

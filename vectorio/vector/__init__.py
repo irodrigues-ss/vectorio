@@ -8,3 +8,4 @@ from vectorio.vector.geojson.geojson import Geojson
 from vectorio.vector.composite.vector_composite import VectorComposite
 from vectorio.vector.srs.reprojection import VectorReprojected
 from vectorio.vector.utm.utm_zone import UTMZone
+from vectorio.vector.kml.kml import KML

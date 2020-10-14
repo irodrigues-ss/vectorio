@@ -12,6 +12,7 @@ from vectorio.vector._src.generators.feature_collection_concatenated import (
 )
 from vectorio.config import GDAL_DRIVERS_NAME
 
+
 class Geojson(IVectorData):
 
     _driver = None
