@@ -3,8 +3,6 @@
 import os
 from vectorio.vector import WKT, GeoFile
 from osgeo.ogr import DataSource
-from osgeo import ogr
-from typing import Generator
 
 
 class TestWKTValid:
@@ -26,29 +24,30 @@ class TestWKTValid:
             wkt = WKT(exp_data)
             assert isinstance(wkt.datasource(), DataSource)
 
-    # def test_geometries(self):
-    #
-    #     def create_items(idx_data: int):
-    #         result = []
-    #         wkt = WKT(self.exp_data_lst[idx_data])
-    #         for geom in wkt.geometries():
-    #             result.append(geom)
-    #         return result
-    #
-    #     items = create_items(0)
-    #     assert items[0].startswith('GEOMETRYCOLLECTION')
-    #     items1 = create_items(1)
-    #     assert items1[0].startswith('POINT')
-    #     items2 = create_items(2)
-    #     assert items2[0].startswith('LINESTRING')
-    #     items3 = create_items(3)
-    #     assert items3[0].startswith('POLYGON')
-    #     items4 = create_items(4)
-    #     assert items4[0].startswith('MULTIPOLYGON')
-    #     items5 = create_items(5)
-    #     assert items5[0].startswith('MULTILINESTRING')
-    #     items6 = create_items(6)
-    #     assert items6[0].startswith('MULTIPOINT')
+    def test_geometries(self):
+
+        def create_items(idx_data: int):
+            result = []
+            wkt = WKT(self.exp_data_lst[idx_data])
+            for geom in wkt.geometries():
+                result.append(geom)
+            return result
+
+        items = create_items(0)
+        assert items[0].startswith('POLYGON')
+        assert items[1].startswith('POINT')
+        items1 = create_items(1)
+        assert items1[0].startswith('POINT')
+        items2 = create_items(2)
+        assert items2[0].startswith('LINESTRING')
+        items3 = create_items(3)
+        assert items3[0].startswith('POLYGON')
+        items4 = create_items(4)
+        assert items4[0].startswith('MULTIPOLYGON')
+        items5 = create_items(5)
+        assert items5[0].startswith('MULTILINESTRING')
+        items6 = create_items(6)
+        assert items6[0].startswith('MULTIPOINT')
 
     def test_geometry_collection(self):
         for exp_data in self.exp_data_lst:

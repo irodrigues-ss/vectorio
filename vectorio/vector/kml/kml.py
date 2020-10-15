@@ -1,45 +1,14 @@
+#!-*-coding:utf-8-*-
 
-import json
 from typing import Optional
-from osgeo.ogr import DataSource, Feature, Geometry
+from osgeo.ogr import DataSource
 from typeguard import typechecked, Generator
 from osgeo import ogr
-from functools import reduce
 
-
-class FeatureCollectionGeojson(str):
-
-    def __new__(cls, *args, **kwargs):
-        features_gen = args[0]
-        concat_features_lbd = lambda x, y: str(x) + ',' + str(y)
-        features_str = reduce(concat_features_lbd, features_gen)
-        return str.__new__(cls, '{"type": "FeatureCollection","features": [' + features_str + ']}')
-
-
-class GeometryCollectionGeojson(str):
-
-    def __new__(cls, *args, **kwargs):
-        features_gen = args[0]
-        concat_features_lbd = lambda x, y: str(x) + ',' + str(y)
-        geometries_str = reduce(concat_features_lbd, features_gen)
-        return str.__new__(cls, '{"type": "GeometryCollection","geometries": [' + geometries_str + ']}')
-
-
-class GeometryGeojson(str):
-
-    @typechecked
-    def __new__(cls, geometry: Geometry):
-        return str.__new__(cls, geometry.ExportToJson())
-
-
-class FeatureGeojson(str):
-
-    @typechecked
-    def __new__(cls, feature: Feature):
-        content = json.dumps(
-            json.loads(feature.ExportToJson()), ensure_ascii=False
-        )
-        return str.__new__(cls, content)
+from vectorio.vector.geo_output.geojson.feature_collection import FeatureCollectionGeojson
+from vectorio.vector.geo_output.geojson.feature import FeatureGeojson
+from vectorio.vector.geo_output.geojson.geometry_collection import GeometryCollectionGeojson
+from vectorio.vector.geo_output.geojson.geometry import GeometryGeojson
 
 
 class KML:
@@ -57,8 +26,7 @@ class KML:
         return ds
 
     @typechecked
-    def features(self, nmax: int = None) -> Generator[FeatureGeojson, None, None]:
-        ds = self.datasource()
+    def _features(self, ds: DataSource, nmax: int = None) -> Generator[FeatureGeojson, None, None]:
         lyr = ds.GetLayer(0)
 
         for i, feat in enumerate(lyr):
@@ -68,10 +36,8 @@ class KML:
                 break
 
     @typechecked
-    def geometries(self, nmax: Optional[int] = None) -> Generator[GeometryGeojson, None, None]:
-        ds = self.datasource()
+    def _geometries(self, ds: DataSource, nmax: Optional[int] = None, ) -> Generator[GeometryGeojson, None, None]:
         lyr = ds.GetLayer(0)
-
         for i, feat in enumerate(lyr):
             yield GeometryGeojson(feat.geometry())
 
@@ -79,9 +45,21 @@ class KML:
                 break
 
     @typechecked
-    def feature_collection(self, nmax: Optional[int] = None) -> FeatureCollectionGeojson:
-        return FeatureCollectionGeojson(self.features(nmax))
+    def features(self, nmax: Optional[int] = None, ds: DataSource = None) -> Generator[FeatureGeojson, None, None]:
+        if ds is None:
+            return self._features(self.datasource(), nmax)
+        return self._features(ds, nmax)
 
     @typechecked
-    def geometry_collection(self, nmax: Optional[int] = None) -> GeometryCollectionGeojson:
-        return GeometryCollectionGeojson(self.geometries(nmax))
+    def geometries(self, nmax: Optional[int] = None, ds: DataSource = None) -> Generator[GeometryGeojson, None, None]:
+        if ds is None:
+            return self._geometries(self.datasource(), nmax)
+        return self._geometries(ds, nmax)
+
+    @typechecked
+    def feature_collection(self, nmax: Optional[int] = None, ds: DataSource = None) -> FeatureCollectionGeojson:
+        return FeatureCollectionGeojson(self.features(nmax, ds))
+
+    @typechecked
+    def geometry_collection(self, nmax: Optional[int] = None, ds: DataSource = None) -> GeometryCollectionGeojson:
+        return GeometryCollectionGeojson(self.geometries(nmax, ds))
