@@ -6,7 +6,7 @@ from osgeo.ogr import DataSource
 from typing import Generator
 
 
-class TestKML:
+class TestKMLValid:
 
     def setup_method(self):
         # self._path = os.path.join(FILESDIR_FROM_FIXTURES, 'test-polygon.kml')

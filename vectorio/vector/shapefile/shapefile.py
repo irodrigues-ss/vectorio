@@ -1,11 +1,11 @@
 #!-*-coding:utf-8-*-
 
 import os
-import json
-from typing import Generator
 from uuid import uuid4
 from osgeo import ogr, osr
 from osgeo.ogr import DataSource, Feature
+
+from vectorio.vector.geojson.geojson import Geojson
 from vectorio.vector.interfaces.ivector_file import IVectorFile
 from vectorio.vector._src.generators.feature_collection_concatenated import (
     FeatureCollectionConcatenated
@@ -23,24 +23,41 @@ from vectorio.vector._src.gdal_aux.cloned_ds import (
 from vectorio.vector.shapefile.encodings import ShapeEncodings
 from vectorio.config import GDAL_DRIVERS_NAME
 from osgeo import osr
+from typing import Optional, Union
+from typeguard import typechecked
+
+NoneType = type(None)
+
+class ShapefilePathWasntPassed(Exception):
+    pass
 
 
-class Shapefile(IVectorFile):
+class Shapefile(Geojson):
 
     _driver = None
-    _shape_encoding = None
-    _search_encoding = None
-    _srid = None
+    _shape_encoding: bool
+    _search_encoding: bool
+    _srid: int
+    _path: str
 
     # TODO: add srid in documentation
-
-    def __init__(self, search_encoding=True, search_encoding_exception=True, srid: int=None):
+    @typechecked
+    def __init__(
+        self, path: Optional[str] = None, search_encoding: bool = True,
+        search_encoding_exception: bool =True, srid: Optional[int]=None
+    ):
         self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['ESRI Shapefile'])
         self._search_encoding = search_encoding
+        self._search_encoding_exception = search_encoding_exception
         self._shape_encoding = ShapeEncodings(
             raise_exception=search_encoding_exception
         )
         self._srid = srid
+        self._path = path
+
+    @typechecked
+    def path(self) -> Union[str, NoneType]:
+        return self._path
 
     def _has_data(self, ds: DataSource):
         lyr = ds.GetLayer()
@@ -49,16 +66,19 @@ class Shapefile(IVectorFile):
                 "Shapefile is empty. Please, check if your shapefile has data."
             )
 
-    def datasource(self, fpath: str) -> DataSource:
-        if not os.path.exists(fpath):
-            raise FileNotFound(f'"{fpath}" does not exists.')
+    def _datasource(self, path: str) -> DataSource:
+        if path is None:
+            raise ShapefilePathWasntPassed("the shapefile path wasn't passed. The path value is None.")
+
+        if not os.path.exists(path):
+            raise FileNotFound(f'"{path}" does not exists.')
 
         if self._search_encoding:
             os.environ['SHAPE_ENCODING'] = self._shape_encoding.from_file(
-                fpath.replace('.shp', '.dbf')  # getting path from .dbf
+                path.replace('.shp', '.dbf')  # getting path from .dbf
+                # TODO: Change this way for get .dbf path
             )
-
-        ds = self._driver.Open(fpath)
+        ds = self._driver.Open(path)
 
         if ds is None:
             raise ShapefileInvalid(
@@ -68,19 +88,11 @@ class Shapefile(IVectorFile):
         self._has_data(ds)
         return GDALClonedDataSource(ds).ref()
 
-    def _export_json(self, feat: Feature) -> str:
-        return json.dumps(
-            json.loads(feat.ExportToJson()), ensure_ascii=False
-        )
-
-    def items(self, datasource: DataSource) -> Generator[str, None, None]:
-        lyr = datasource.GetLayer(0)
-        for idx_feat in range(lyr.GetFeatureCount()):
-            feat = lyr.GetFeature(idx_feat)
-            yield self._export_json(feat)
-
-    def collection(self, datasource: DataSource) -> str:
-        return FeatureCollectionConcatenated(self.items(datasource))
+    @typechecked
+    def datasource(self, path: Optional[str] = None) -> DataSource:
+        if path is None:
+            return self._datasource(self._path)
+        return self._datasource(path)
 
     # def _create_prj(self, out_prj: str, feat: Feature, srid: int):
     #     srs = feat.geometry().GetSpatialReference()
@@ -109,8 +121,3 @@ class Shapefile(IVectorFile):
 
         ds_out.Destroy()
         return out_path
-
-
-
-
-

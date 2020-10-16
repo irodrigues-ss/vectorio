@@ -17,13 +17,11 @@ from zipfile import ZipFile
 class TestShapefileValid:
 
     def setup_method(self):
-        self.shapefile = Shapefile()
-        self.shapefile_as_zip = ShapefileAsZip(Shapefile())
-        self.shape_valid_as_zippath = os.path.join(
+        self.shape_zip_path = os.path.join(
             FILESDIR_FROM_FIXTURES, 'ponto-com-attr-utf8.zip'
         )
         self.dirpath_tmp = tempfile.mkdtemp()
-        with ZipFile(self.shape_valid_as_zippath) as zipf:
+        with ZipFile(self.shape_zip_path) as zipf:
             zipf.extractall(self.dirpath_tmp)
         self.shppath = os.path.join(
             self.dirpath_tmp, 'ponto-com-attr-utf8.shp'
@@ -41,18 +39,22 @@ class TestShapefileValid:
         self.out_prj = self.out_shp.replace('shp', 'prj')
 
     def test_datasource(self):
-        ds = self.shapefile_as_zip.datasource(self.shape_valid_as_zippath)
-        assert isinstance(ds, DataSource)
+        zippath = os.path.join(
+            FILESDIR_FROM_FIXTURES, 'ponto-com-attr-utf8.zip'
+        )
+        shapefile_as_zip = ShapefileAsZip(Shapefile(zippath))
+        assert shapefile_as_zip.datasource() is not None
 
     def test_datasource_from_shp(self):
-        self.shapefile.datasource(self.fpath_shp)
+        shp = Shapefile(self.fpath_shp)
+        assert shp.datasource() is not None
 
-    def test_items(self):
-        ds = self.shapefile_as_zip.datasource(self.shape_valid_as_zippath)
+    def test_features(self):
+        shapefile_as_zip = ShapefileAsZip(Shapefile(self.shape_zip_path))
         drv = ogr.GetDriverByName('ESRI Shapefile')
         datasource = drv.Open(self.shppath)
         lyr_exp = datasource.GetLayer(0)
-        features = self.shapefile.items(ds)
+        features = shapefile_as_zip.features()
         assert isinstance(features, Generator)
         for idx, feat in enumerate(features):
             """
@@ -61,38 +63,37 @@ class TestShapefileValid:
             """
             assert feat == json.dumps(json.loads(lyr_exp.GetFeature(idx).ExportToJson()), ensure_ascii=False)
 
-    def test_collection(self):
-        feat_collec = self.shapefile_as_zip.collection(
-            self.shapefile_as_zip.datasource(self.shape_valid_as_zippath)
-        )
+    def test_feature_collection(self):
+        shapefile_as_zip = ShapefileAsZip(Shapefile(self.shape_zip_path))
+        feat_collec = shapefile_as_zip.feature_collection()
         drv = ogr.GetDriverByName('GeoJSON')
         assert isinstance(drv.Open(feat_collec), DataSource)
 
-    def test_collection_from_rar(self):
-        shape_as_rar = ShapefileAsRar(self.shapefile)
-        feat_collec = shape_as_rar.collection(
-            shape_as_rar.datasource(self.shape_as_rar)
-        )
-        drv = ogr.GetDriverByName('GeoJSON')
-        assert isinstance(drv.Open(feat_collec), DataSource)
-
-    def test_write(self):
-        gj = Geojson()
-        out_path = self.shapefile.write(
-            gj.datasource(self.gjs), self.out_shp
-        )
-        assert os.path.exists(out_path)
-        assert os.path.exists(self.out_shx)
-        assert os.path.exists(self.out_prj)
-        assert os.path.exists(self.out_dbf)
-        assert "áàéãôç" in self.shapefile.collection(
-            self.shapefile.datasource(out_path)
-        )
-
-    def teardown_method(self):
-        shutil.rmtree(self.dirpath_tmp)
-        if os.path.exists(self.out_shp):
-            os.remove(self.out_shp)
-            os.remove(self.out_shx)
-            os.remove(self.out_dbf)
-            os.remove(self.out_prj)
+    # def test_collection_from_rar(self):
+    #     shape_as_rar = ShapefileAsRar(self.shapefile)
+    #     feat_collec = shape_as_rar.collection(
+    #         shape_as_rar.datasource(self.shape_as_rar)
+    #     )
+    #     drv = ogr.GetDriverByName('GeoJSON')
+    #     assert isinstance(drv.Open(feat_collec), DataSource)
+    #
+    # def test_write(self):
+    #     gj = Geojson()
+    #     out_path = self.shapefile.write(
+    #         gj.datasource(self.gjs), self.out_shp
+    #     )
+    #     assert os.path.exists(out_path)
+    #     assert os.path.exists(self.out_shx)
+    #     assert os.path.exists(self.out_prj)
+    #     assert os.path.exists(self.out_dbf)
+    #     assert "áàéãôç" in self.shapefile.collection(
+    #         self.shapefile.datasource(out_path)
+    #     )
+    #
+    # def teardown_method(self):
+    #     shutil.rmtree(self.dirpath_tmp)
+    #     if os.path.exists(self.out_shp):
+    #         os.remove(self.out_shp)
+    #         os.remove(self.out_shx)
+    #         os.remove(self.out_dbf)
+    #         os.remove(self.out_prj)
