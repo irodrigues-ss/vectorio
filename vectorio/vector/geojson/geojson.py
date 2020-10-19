@@ -26,7 +26,7 @@ class Geojson:
     _data: str
 
     @typechecked
-    def __init__(self, data: str):
+    def __init__(self, data: Optional[str] = None):
         self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['GeoJSON'])
         self._data = data
 

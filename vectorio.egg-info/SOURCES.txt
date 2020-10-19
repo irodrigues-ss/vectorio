@@ -62,6 +62,8 @@ vectorio/vector/utm/__init__.py
 vectorio/vector/utm/utm_zone.py
 vectorio/vector/wkt/__init__.py
 vectorio/vector/wkt/geom_type_factory.py
+vectorio/vector/wkt/wkt.bkp.py
 vectorio/vector/wkt/wkt.py
+vectorio/vector/wkt/wkt_geom_collec.py
 vectorio/vector/wkt/interfaces/__init__.py
 vectorio/vector/wkt/interfaces/igeom_type_factory.py

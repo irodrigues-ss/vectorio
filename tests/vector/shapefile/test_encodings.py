@@ -1,7 +1,7 @@
 #!-*-coding:utf-8-*-
 
 import os
-from vectorio.vector import Shapefile, ShapefileAsZip, VectorReprojected
+from vectorio.vector import Shapefile, ShapefileCompressed, VectorReprojected
 from tests.config import get_test_file
 
 

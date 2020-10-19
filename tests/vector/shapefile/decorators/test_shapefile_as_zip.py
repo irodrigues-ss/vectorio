@@ -1,7 +1,8 @@
 #!-*-coding:utf-8-*-
 
 import os
-from vectorio.vector import Shapefile, ShapefileAsZip, Geojson
+from vectorio.compress import Zip
+from vectorio.vector import Shapefile, ShapefileCompressed, Geojson
 
 
 class TestShapefileAsZip:
@@ -13,7 +14,7 @@ class TestShapefileAsZip:
 
     def test_write(self):
         gj = Geojson()
-        shape = ShapefileAsZip(Shapefile())
+        shape = ShapefileCompressed(Shapefile(), compress_engine=Zip())
         self.out_path = shape.write(gj.datasource(self.gjs), self.out_path)
         assert self.out_path.endswith('.zip')
         assert bool(shape.collection(shape.datasource(self.out_path)))

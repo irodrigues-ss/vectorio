@@ -2,8 +2,9 @@
 import os
 from osgeo import ogr
 from osgeo.ogr import DataSource
+from vectorio.compress.zip_file import Zip
 from vectorio.vector import (
-    Shapefile, ShapefileAsZip, WKT
+    Shapefile, ShapefileCompressed, WKT
 )
 from vectorio.config import STATIC_DIR
 from vectorio.vector.exceptions import (
@@ -20,8 +21,8 @@ class UTMZone:
 
     def __init__(self):
         os.environ['SHAPE_ENCODING'] = 'ISO-8859-3'
-        self._world_utm_grid_ds = ShapefileAsZip(
-            Shapefile(search_encoding=False)
+        self._world_utm_grid_ds = ShapefileCompressed(
+            Shapefile(search_encoding=False), compress_engine=Zip()
         ).datasource(
             os.path.join(STATIC_DIR, 'World_UTM_Grid_HM.zip')
         )

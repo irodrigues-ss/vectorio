@@ -7,15 +7,9 @@ from osgeo.ogr import DataSource, Feature
 
 from vectorio.vector.geojson.geojson import Geojson
 from vectorio.vector.interfaces.ivector_file import IVectorFile
-from vectorio.vector._src.generators.feature_collection_concatenated import (
-    FeatureCollectionConcatenated
-)
 from vectorio.vector.exceptions import (
     ShapefileInvalid, ShapefileIsEmpty,
     ImpossibleCreateShapefileFromGeometryCollection, FileNotFound
-)
-from vectorio.vector.shapefile.file_required_by_extension import (
-    FileRequiredByExtension
 )
 from vectorio.vector._src.gdal_aux.cloned_ds import (
     GDALClonedDataSource
@@ -37,14 +31,13 @@ class Shapefile(Geojson):
     _driver = None
     _shape_encoding: bool
     _search_encoding: bool
-    _srid: int
     _path: str
 
     # TODO: add srid in documentation
     @typechecked
     def __init__(
         self, path: Optional[str] = None, search_encoding: bool = True,
-        search_encoding_exception: bool =True, srid: Optional[int]=None
+        search_encoding_exception: bool =True
     ):
         self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['ESRI Shapefile'])
         self._search_encoding = search_encoding
@@ -52,7 +45,6 @@ class Shapefile(Geojson):
         self._shape_encoding = ShapeEncodings(
             raise_exception=search_encoding_exception
         )
-        self._srid = srid
         self._path = path
 
     @typechecked
@@ -94,12 +86,8 @@ class Shapefile(Geojson):
             return self._datasource(self._path)
         return self._datasource(path)
 
-    # def _create_prj(self, out_prj: str, feat: Feature, srid: int):
-    #     srs = feat.geometry().GetSpatialReference()
-    #     with open(out_prj, 'w') as f:
-    #         f.write(srs.ExportToWkt())
-
-    def write(self, ds: DataSource, out_path: str) -> str:
+    @typechecked
+    def _write(self, ds: DataSource, out_path: str, srid: int) -> str:
         assert out_path.endswith('.shp'), 'Output file have has .shp extension.'
         lyr = ds.GetLayer()
         feat = lyr.GetFeature(0)
@@ -112,12 +100,26 @@ class Shapefile(Geojson):
             )
         ds_out = self._driver.CreateDataSource(out_path)
         inp_lyr = ds.GetLayer()
+
+        # Configuring projection
         proj = osr.SpatialReference()
-        proj.SetWellKnownGeogCS(f'EPSG:{self._srid}')
+        proj.SetWellKnownGeogCS(f'EPSG:{srid}')
         layer_out = ds_out.CreateLayer(str(uuid4()), srs=proj)
 
+        # Configuring attributes
+        lyr_def = inp_lyr.GetLayerDefn()
+        for i in range(lyr_def.GetFieldCount()):
+            layer_out.CreateField(lyr_def.GetFieldDefn(i))
+
+        # Configuring features (with geometries)
         for feat in inp_lyr:
             layer_out.CreateFeature(feat)
 
         ds_out.Destroy()
         return out_path
+
+    @typechecked
+    def write(self, out_path: str, ds: Optional[DataSource] = None, srid: int = 4326) -> str:
+        if ds is None:
+            return self._write(self.datasource(), out_path, srid)
+        return self._write(ds, out_path, srid)

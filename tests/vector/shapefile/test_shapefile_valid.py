@@ -4,8 +4,9 @@ import os
 import tempfile
 import shutil
 import json
+from vectorio.compress import Zip, Rar
 from vectorio.vector import (
-    Shapefile, ShapefileAsZip, ShapefileAsRar, Geojson
+    Shapefile, ShapefileCompressed, Geojson
 )
 from tests.config import FILESDIR_FROM_FIXTURES
 from osgeo.ogr import DataSource
@@ -42,7 +43,7 @@ class TestShapefileValid:
         zippath = os.path.join(
             FILESDIR_FROM_FIXTURES, 'ponto-com-attr-utf8.zip'
         )
-        shapefile_as_zip = ShapefileAsZip(Shapefile(zippath))
+        shapefile_as_zip = ShapefileCompressed(Shapefile(zippath), compress_engine=Zip())
         assert shapefile_as_zip.datasource() is not None
 
     def test_datasource_from_shp(self):
@@ -50,7 +51,7 @@ class TestShapefileValid:
         assert shp.datasource() is not None
 
     def test_features(self):
-        shapefile_as_zip = ShapefileAsZip(Shapefile(self.shape_zip_path))
+        shapefile_as_zip = ShapefileCompressed(Shapefile(self.shape_zip_path),  compress_engine=Zip())
         drv = ogr.GetDriverByName('ESRI Shapefile')
         datasource = drv.Open(self.shppath)
         lyr_exp = datasource.GetLayer(0)
@@ -64,36 +65,36 @@ class TestShapefileValid:
             assert feat == json.dumps(json.loads(lyr_exp.GetFeature(idx).ExportToJson()), ensure_ascii=False)
 
     def test_feature_collection(self):
-        shapefile_as_zip = ShapefileAsZip(Shapefile(self.shape_zip_path))
+        shapefile_as_zip = ShapefileCompressed(Shapefile(self.shape_zip_path), compress_engine=Zip())
         feat_collec = shapefile_as_zip.feature_collection()
         drv = ogr.GetDriverByName('GeoJSON')
         assert isinstance(drv.Open(feat_collec), DataSource)
 
-    # def test_collection_from_rar(self):
-    #     shape_as_rar = ShapefileAsRar(self.shapefile)
-    #     feat_collec = shape_as_rar.collection(
-    #         shape_as_rar.datasource(self.shape_as_rar)
-    #     )
-    #     drv = ogr.GetDriverByName('GeoJSON')
-    #     assert isinstance(drv.Open(feat_collec), DataSource)
-    #
-    # def test_write(self):
-    #     gj = Geojson()
-    #     out_path = self.shapefile.write(
-    #         gj.datasource(self.gjs), self.out_shp
-    #     )
-    #     assert os.path.exists(out_path)
-    #     assert os.path.exists(self.out_shx)
-    #     assert os.path.exists(self.out_prj)
-    #     assert os.path.exists(self.out_dbf)
-    #     assert "áàéãôç" in self.shapefile.collection(
-    #         self.shapefile.datasource(out_path)
-    #     )
-    #
-    # def teardown_method(self):
-    #     shutil.rmtree(self.dirpath_tmp)
-    #     if os.path.exists(self.out_shp):
-    #         os.remove(self.out_shp)
-    #         os.remove(self.out_shx)
-    #         os.remove(self.out_dbf)
-    #         os.remove(self.out_prj)
+    def test_feature_collection_from_rar(self):
+        shape_as_rar = ShapefileCompressed(Shapefile(self.shape_as_rar), compress_engine=Rar())
+        feat_collec = shape_as_rar.feature_collection()
+        drv = ogr.GetDriverByName('GeoJSON')
+        assert isinstance(drv.Open(feat_collec), DataSource)
+
+    def test_write(self):
+        gj = Geojson(self.gjs)
+        shapefile = Shapefile()
+
+        out_path = shapefile.write(
+            self.out_shp, gj.datasource(),
+        )
+        assert os.path.exists(out_path)
+        assert os.path.exists(self.out_shx)
+        assert os.path.exists(self.out_prj)
+        assert os.path.exists(self.out_dbf)
+        assert "áàéãôç" in shapefile.feature_collection(
+            ds=shapefile.datasource(out_path)
+        )
+
+    def teardown_method(self):
+        shutil.rmtree(self.dirpath_tmp)
+        if os.path.exists(self.out_shp):
+            os.remove(self.out_shp)
+            os.remove(self.out_shx)
+            os.remove(self.out_dbf)
+            os.remove(self.out_prj)

@@ -5,7 +5,8 @@ import tempfile
 import shutil
 import pytest
 
-from vectorio.vector import Shapefile, ShapefileAsZip, Geojson, WKT
+from vectorio.compress import Zip
+from vectorio.vector import Shapefile, ShapefileCompressed, Geojson, WKT
 from tests.config import FILESDIR_FROM_FIXTURES
 from zipfile import ZipFile
 from vectorio.vector.exceptions import (
@@ -16,7 +17,7 @@ from vectorio.vector.exceptions import (
 class TestShapefileInvalid:
 
     def setup_method(self):
-        self.shapefile = ShapefileAsZip(Shapefile())
+        self.shapefile = ShapefileCompressed(Shapefile(), compress_engine=Zip())
         self.shape_invalid_as_zippath = os.path.join(
             FILESDIR_FROM_FIXTURES,
             'ponto-com-attr-utf8-without-shp.zip'

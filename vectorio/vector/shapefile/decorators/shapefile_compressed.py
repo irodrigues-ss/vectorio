@@ -5,44 +5,33 @@ import shutil
 from typing import Generator
 from osgeo.ogr import DataSource
 
+from vectorio.compress.icompress_engine import ICompressEngine
+from vectorio.compress.zip_file import Zip
 from vectorio.vector.geo_output.geojson.feature import FeatureGeojson
 from vectorio.vector.geo_output.geojson.feature_collection import FeatureCollectionGeojson
 from vectorio.vector.geo_output.geojson.geometry import GeometryGeojson
 from vectorio.vector.geo_output.geojson.geometry_collection import GeometryCollectionGeojson
-from vectorio.vector.interfaces.ivector_file import IVectorFile
-from zipfile import ZipFile
+
 from vectorio.vector.shapefile.file_required_by_extension import (
     FileRequiredByExtension
 )
-import tempfile
-
 from typeguard import typechecked
 from typing import Optional
 
 
-class ShapefileAsZip:
+class ShapefileCompressed:
 
     _shapefile = None
-
-    def __init__(self, shapefile: IVectorFile):
-        self._shapefile = shapefile
+    _compress_engine: ICompressEngine
 
     @typechecked
-    def _extraction_dir(self, fpath: str) -> str:
-        tmpdir = tempfile.mkdtemp()
-        with ZipFile(fpath) as zipf:
-            zipf.extractall(tmpdir)
-        return tmpdir
-
-    def _compress_files(self, fpath: str, files: list) -> str:
-        with ZipFile(fpath, 'w') as zipf:
-            for f in files:
-                zipf.write(f)
-        return fpath
+    def __init__(self, shapefile: object, compress_engine: ICompressEngine = Zip()):
+        self._shapefile = shapefile
+        self._compress_engine = compress_engine
 
     @typechecked
     def datasource(self) -> DataSource:
-        dir_with_files = self._extraction_dir(self._shapefile.path())
+        dir_with_files = self._compress_engine.decompress(self._shapefile.path())
         files_required = FileRequiredByExtension(
             dir_with_files, ['shp', 'dbf', 'shx', 'prj']
         )
@@ -74,16 +63,23 @@ class ShapefileAsZip:
             return self._shapefile.geometry_collection(nmax, self.datasource())
         return self._shapefile.geometry_collection(nmax, ds)
 
-    def write(self, ds: DataSource, out_path: str) -> str:
+    @typechecked
+    def _write(self, ds: DataSource, out_path: str, srid: int) -> str:
         assert out_path.endswith('.zip'), 'Output file have has .zip extension.'
-        out_shp = self._shapefile.write(ds, out_path.replace('.zip', '.shp'))
+        out_shp = self._shapefile.write(ds, out_path.replace('.zip', '.shp'), srid)
         files = [
             out_shp,
             out_shp.replace('.shp', '.dbf'),
             out_shp.replace('.shp', '.prj'),
             out_shp.replace('.shp', '.shx')
         ]
-        out_zip = self._compress_files(out_path, files)
+        out_zip = self._compress_engine.compress(out_path, files)
         for f in files:
             os.remove(f)
         return out_zip
+
+    @typechecked
+    def write(self, out_path: str, ds: DataSource = None, srid: int = 4326) -> str:
+        if ds is None:
+            return self._write(self.datasource(), out_path, srid)
+        return self._write(ds, out_path, srid)

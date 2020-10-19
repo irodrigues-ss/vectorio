@@ -4,7 +4,7 @@ import os
 from tests.config import FILESDIR_FROM_FIXTURES
 from vectorio.vector import Shapefile
 from vectorio.vector import DataSourceReprojected
-from vectorio.vector import ShapefileAsZip
+from vectorio.vector import ShapefileCompressed
 
 
 class TestDataSourceReprojected:
