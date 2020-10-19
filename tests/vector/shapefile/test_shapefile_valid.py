@@ -78,7 +78,7 @@ class TestShapefileValid:
 
     def test_write(self):
         gj = Geojson(self.gjs)
-        shapefile = Shapefile()
+        shapefile = Shapefile(srid_for_write=4326)
 
         out_path = shapefile.write(
             self.out_shp, gj.datasource(),

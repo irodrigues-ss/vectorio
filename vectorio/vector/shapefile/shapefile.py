@@ -37,7 +37,7 @@ class Shapefile(Geojson):
     @typechecked
     def __init__(
         self, path: Optional[str] = None, search_encoding: bool = True,
-        search_encoding_exception: bool =True
+        search_encoding_exception: bool =True, srid_for_write: int = 4326
     ):
         self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['ESRI Shapefile'])
         self._search_encoding = search_encoding
@@ -46,6 +46,7 @@ class Shapefile(Geojson):
             raise_exception=search_encoding_exception
         )
         self._path = path
+        self._srid_for_write = srid_for_write
 
     @typechecked
     def path(self) -> Union[str, NoneType]:
@@ -87,7 +88,7 @@ class Shapefile(Geojson):
         return self._datasource(path)
 
     @typechecked
-    def _write(self, ds: DataSource, out_path: str, srid: int) -> str:
+    def _write(self, ds: DataSource, out_path: str) -> str:
         assert out_path.endswith('.shp'), 'Output file have has .shp extension.'
         lyr = ds.GetLayer()
         feat = lyr.GetFeature(0)
@@ -103,7 +104,7 @@ class Shapefile(Geojson):
 
         # Configuring projection
         proj = osr.SpatialReference()
-        proj.SetWellKnownGeogCS(f'EPSG:{srid}')
+        proj.SetWellKnownGeogCS(f'EPSG:{self._srid_for_write}')
         layer_out = ds_out.CreateLayer(str(uuid4()), srs=proj)
 
         # Configuring attributes
@@ -119,7 +120,7 @@ class Shapefile(Geojson):
         return out_path
 
     @typechecked
-    def write(self, out_path: str, ds: Optional[DataSource] = None, srid: int = 4326) -> str:
+    def write(self, out_path: str, ds: Optional[DataSource] = None) -> str:
         if ds is None:
-            return self._write(self.datasource(), out_path, srid)
-        return self._write(ds, out_path, srid)
+            return self._write(self.datasource(), out_path)
+        return self._write(ds, out_path)

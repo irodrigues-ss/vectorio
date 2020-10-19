@@ -16,26 +16,26 @@ class TestVectorReprojected:
         self.shp_utm_22 = os.path.join(
             FILESDIR_FROM_FIXTURES, 'data_utm22.zip'
         )
-        self.shapefile = ShapefileCompressed(Shapefile(), compress_engine=Zip())
+        self.shapefile = ShapefileCompressed(Shapefile(self.shp_utm_22), compress_engine=Zip())
         self.vector = VectorReprojected(self.shapefile, out_srid=4674)
 
     def test_datasource(self):
-        ds = self.vector.datasource(self.shp_utm_22)
+        ds = self.vector.datasource()
         assert isinstance(ds, DataSource)
         assert ds.GetLayerCount() == 1
         lyr = ds.GetLayer()
         assert lyr.GetFeatureCount() == 1
 
-    def test_items(self):
-        ds = self.vector.datasource(self.shp_utm_22)
-        for item in self.vector.items(ds):  # only one iteration
+    def test_features(self):
+        ds = self.vector.datasource()
+        for item in self.vector.features(ds=ds):  # only one iteration
             item_dict = json.loads(item)
             for pt in item_dict["geometry"]["coordinates"][0]:
                 assert int(pt[0]) == -48 and int(pt[1]) == -18
 
-    def test_collection(self):
-        ds = self.vector.datasource(self.shp_utm_22)
-        coll_dict = json.loads(self.vector.collection(ds))
+    def test_feature_collection(self):
+        ds = self.vector.datasource()
+        coll_dict = json.loads(self.vector.feature_collection(ds=ds))
         for feat in coll_dict["features"]:
             for pt in feat["geometry"]["coordinates"][0]:
                 assert int(pt[0]) == -48 and int(pt[1]) == -18

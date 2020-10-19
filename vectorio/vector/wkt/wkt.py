@@ -6,6 +6,7 @@ from osgeo.ogr import Geometry, DataSource, Feature
 
 from vectorio.vector.geo_output.wkt.geometry import GeometryWKT
 from vectorio.vector.geo_output.wkt.geometry_collection import GeometryCollectionWKT
+from vectorio.vector.interfaces.ivector import IVector
 from vectorio.vector.interfaces.ivector_data import IVectorData
 from vectorio.vector.exceptions import WKTInvalid
 from vectorio.vector.wkt.geom_type_factory import GeometryTypeFactory
@@ -19,7 +20,16 @@ class InvalidOperationForThisDataType(Exception):
     pass
 
 
-class WKT:
+def call_if(obj, func_name, nmax, ds = None):
+    func = getattr(obj, func_name)
+    ds_creator = getattr(obj, 'datasource')
+    if ds is None:
+        return func(nmax, ds_creator())
+    return func(nmax, ds)
+
+
+
+class WKT(IVector):
 
     _gt_factory: GeometryTypeFactory
     _initial_srid: int
@@ -83,6 +93,14 @@ class WKT:
             wkt_geom = WKTGeometry(self.datasource(), self._as_geometry_collection)
         return wkt_geom.collection(nmax)
 
-    #def write(self, ds: DataSource, out_path: str) -> str:
-    #    self._validate_basedir(out_path)
-    #    return self._write_by_collection(ds, out_path)
+    def _write(self, ds: DataSource, out_path: str) -> str:
+        self._validate_basedir(out_path)
+        with open(out_path, 'w') as f:
+            f.write(self.geometry_collection(ds=ds))
+        return out_path
+
+    def write(self, out_path: str, ds: DataSource = None) -> str:
+        if ds is None:
+            return self._write(self.datasource(), out_path)
+        return self._write(ds, out_path)
+

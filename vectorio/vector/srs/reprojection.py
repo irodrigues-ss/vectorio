@@ -5,6 +5,14 @@ from osgeo.ogr import DataSource
 from osgeo import ogr, osr
 from vectorio.vector.interfaces.ivector import IVector
 from vectorio.vector import DataSourceReprojected
+from typing import Optional
+
+# def call_if(obj, func_name, nmax, ds = None):
+#     func = getattr(obj, func_name)
+#     ds_creator = getattr(obj, 'datasource')
+#     if ds is None:
+#         return func(nmax, ds_creator())
+#     return func(nmax, ds)
 
 
 class VectorReprojected(IVector):
@@ -20,17 +28,32 @@ class VectorReprojected(IVector):
         self._in_srid = in_srid
         self._out_srid = out_srid
 
-    def datasource(self, input_data: str) -> DataSource:
+    def datasource(self) -> DataSource:
         return DataSourceReprojected(
-            self._vector.datasource(input_data),
-            self._in_srid, self._out_srid
+            self._vector.datasource(), self._in_srid, self._out_srid
         ).ref()
 
-    def items(self, datasource: DataSource) -> Generator[str, None, None]:
-        return self._vector.items(datasource)
+    def geometries(self, nmax: int = None, ds: DataSource = None) -> Generator[str, None, None]:
+        if ds is None:
+            return self._vector.geometries(nmax, self.datasource())
+        return self._vector.geometries(nmax, ds)
 
-    def collection(self, datasource: DataSource) -> str:
-        return self._vector.collection(datasource)
+    def features(self, nmax: int = None, ds: DataSource = None) -> Generator[str, None, None]:
+        if ds is None:
+            return self._vector.features(nmax, self.datasource())
+        return self._vector.features(nmax, ds)
 
-    def write(self, ds: DataSource, out_path: str) -> str:
-        return self._vector.write(ds, out_path)
+    def feature_collection(self, nmax: Optional[int] = None, ds: Optional[DataSource] = None):
+        if ds is None:
+            return self._vector.feature_collection(nmax, self.datasource())
+        return self._vector.feature_collection(nmax, ds)
+
+    def geometry_collection(self, nmax: Optional[int] = None, ds: Optional[DataSource] = None):
+        if ds is None:
+            return self._vector.geometry_collection(nmax, self.datasource())
+        return self._vector.geometry_collection(nmax, ds)
+
+    def write(self, out_path: str, ds: DataSource = None) -> str:
+        if ds is None:
+            return self._vector.write(out_path, ds=self.datasource())
+        return self._vector.write(out_path, ds=ds)

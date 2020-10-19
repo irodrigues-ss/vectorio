@@ -10,6 +10,7 @@ from vectorio.vector.geo_output.geojson.feature import FeatureGeojson
 from vectorio.vector.geo_output.geojson.feature_collection import FeatureCollectionGeojson
 from vectorio.vector.geo_output.geojson.geometry import GeometryGeojson
 from vectorio.vector.geo_output.geojson.geometry_collection import GeometryCollectionGeojson
+from vectorio.vector.interfaces.ivector import IVector
 from vectorio.vector.interfaces.ivector_data import IVectorData
 from vectorio.vector.exceptions import GeojsonInvalid
 from vectorio.vector._src.generators.feature_collection_concatenated import (
@@ -19,8 +20,14 @@ from vectorio.config import GDAL_DRIVERS_NAME
 from typeguard import typechecked
 from typing import Optional
 
+# def call_if(obj, func_name, nmax, ds = None):
+#     func = getattr(obj, func_name)
+#     ds_creator = getattr(obj, 'datasource')
+#     if ds is None:
+#         return func(nmax, ds_creator())
+#     return func(nmax, ds)
 
-class Geojson:
+class Geojson(IVector):
 
     _driver = None
     _data: str
@@ -78,6 +85,13 @@ class Geojson:
     def geometry_collection(self, nmax: Optional[int] = None, ds: DataSource = None) -> GeometryCollectionGeojson:
         return GeometryCollectionGeojson(self.geometries(nmax, ds))
 
-    # def write(self, ds: DataSource, out_path: str) -> str:
-    #     self._validate_basedir(out_path)
-    #     return self._write_by_collection(ds, out_path)
+    def _write(self, ds: DataSource, out_path: str) -> str:
+        self._validate_basedir(out_path)
+        with open(out_path, 'w') as f:
+            f.write(self.feature_collection(ds=ds))
+        return out_path
+
+    def write(self, out_path: str, ds: DataSource = None) -> str:
+        if ds is None:
+            return self._write(self.datasource(), out_path)
+        return self._write(ds, out_path)

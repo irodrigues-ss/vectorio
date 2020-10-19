@@ -5,7 +5,7 @@ import json
 from typing import Generator
 from osgeo import gdal, ogr
 from osgeo.ogr import DataSource
-from vectorio.vector import VectorComposite, WKT, Geojson, GeoFile
+from vectorio.vector import VectorComposite, WKT, Geojson
 
 
 class TestVectorComposite:
@@ -16,9 +16,9 @@ class TestVectorComposite:
         self.gjs_data = json.dumps({"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Point","coordinates": [-49.35058,-7.44962]}}]})
         self.gj_path = '/tmp/test-composite.geojson'
 
-    def test_wkt_to_gjs_items(self):
-        vector = VectorComposite(WKT(), Geojson())
-        gen_data = vector.items(self.wkt_data)
+    def test_wkt_to_gjs_geometries(self):
+        vector = VectorComposite(WKT(self.wkt_data), Geojson())
+        gen_data = vector.geometries()
         exp_geom = ogr.CreateGeometryFromWkt(self.wkt_data)
         assert isinstance(gen_data, Generator)
 
@@ -30,8 +30,8 @@ class TestVectorComposite:
             assert geom_created.Equal(exp_geom)
 
     def test_gjs_to_wkt_items(self):
-        vector = VectorComposite(Geojson(), WKT())
-        gen_data = vector.items(self.gjs_data)
+        vector = VectorComposite(Geojson(self.gjs_data), WKT())
+        gen_data = vector.geometries()
         gjs_ds = gdal.OpenEx(self.gjs_data)
         lyr = gjs_ds.GetLayer(0)
         assert isinstance(gen_data, Generator)
@@ -42,25 +42,26 @@ class TestVectorComposite:
             geom_created = ogr.CreateGeometryFromWkt(data)
             assert geom_created.Equal(exp_geom)
 
-    def test_wkt_to_gjs_collection(self):
-        vector = VectorComposite(WKT(), Geojson())
+    def test_wkt_to_gjs_feature_collection(self):
+        vector = VectorComposite(WKT(self.wkt_data), Geojson())
         drv = ogr.GetDriverByName('GeoJSON')
-        feat_collec = vector.collection(self.wkt_data)
+        feat_collec = vector.feature_collection()
         assert isinstance(drv.Open(feat_collec), DataSource)
 
     def test_gjs_to_wkt_collection(self):
-        vector = VectorComposite(Geojson(), WKT())
-        geom_collec = vector.collection(self.gjs_data)
+        vector = VectorComposite(Geojson(self.gjs_data), WKT())
+        geom_collec = vector.geometry_collection()
         assert geom_collec.startswith('GEOMETRYCOLLECTION')
 
     def test_write(self):
-        gj = Geojson()
-        vector = VectorComposite(WKT(), gj)
-        fpath = vector.write(self.wkt_data, self.gj_path)
+        vector = VectorComposite(WKT(self.wkt_data), Geojson())
+        fpath = vector.write(self.gj_path)
         assert os.path.exists(fpath)
-        data = gj.collection(GeoFile(gj).datasource(fpath))
+        with open(fpath) as f:
+            gj = Geojson(f.read())
+            data = gj.feature_collection()
         assert json.loads(data)['features'][0]['geometry'][
-            'coordinates'
+           'coordinates'
         ] == self.exp_coords_wkt
 
     def teardown_method(self):
