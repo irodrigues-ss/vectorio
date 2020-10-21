@@ -1,6 +1,16 @@
 #!-*-coding:utf-8-*-
 
 
+
+
+class KMLInvalid(Exception):
+    pass
+
+
+class ShapefilePathWasntPassed(Exception):
+    pass
+
+
 class CharDecodeError(Exception):
     pass
 

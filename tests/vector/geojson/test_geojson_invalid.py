@@ -15,7 +15,8 @@ class TestGeojsonInvalid:
         ]
 
     def test_datasource(self):
-        gj = Geojson()
+
         for inv_data in self.gj_data_lst:
+            gj = Geojson(inv_data)
             with pytest.raises(GeojsonInvalid):
-                assert gj.datasource(inv_data)
+                assert gj.datasource()

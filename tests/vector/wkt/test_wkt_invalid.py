@@ -15,8 +15,7 @@ class TestWKTInvalid:
         cls.invalid_data3 = 'ABC'
 
     def test_datasource(self):
-        wkt = WKT()
         with pytest.raises(WKTInvalid):
-            wkt.datasource(self.invalid_data1)
-            wkt.datasource(self.invalid_data2)
-            wkt.datasource(self.invalid_data3)
+            WKT(self.invalid_data1).datasource()
+            WKT(self.invalid_data2).datasource()
+            WKT(self.invalid_data3).datasource()

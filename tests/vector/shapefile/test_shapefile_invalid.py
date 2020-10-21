@@ -17,11 +17,11 @@ from vectorio.vector.exceptions import (
 class TestShapefileInvalid:
 
     def setup_method(self):
-        self.shapefile = ShapefileCompressed(Shapefile(), compress_engine=Zip())
         self.shape_invalid_as_zippath = os.path.join(
             FILESDIR_FROM_FIXTURES,
             'ponto-com-attr-utf8-without-shp.zip'
         )
+        self.shapefile = ShapefileCompressed(Shapefile(self.shape_invalid_as_zippath), compress_engine=Zip())
         self.dirpath_tmp = tempfile.mkdtemp()
         with ZipFile(self.shape_invalid_as_zippath) as zipf:
             zipf.extractall(self.dirpath_tmp)
@@ -33,20 +33,20 @@ class TestShapefileInvalid:
 
     def test_datasource(self):
         with pytest.raises(FileNotFound):
-            self.shapefile.datasource(self.shape_invalid_as_zippath)
+            self.shapefile.datasource()
 
     def test_write_error(self):
-        wkt = WKT()
+        wkt = WKT(self.gc_coll)
         with pytest.raises(ImpossibleCreateShapefileFromGeometryCollection):
             self.shapefile.write(
-                wkt.datasource(self.gc_coll), '/tmp/test-invalid.shp'
+                '/tmp/test-invalid.zip', ds=wkt.datasource()
             )
-
-    def test_write_error(self):
-        gj = Geojson()
-        with pytest.raises(AssertionError):
-            self.shapefile.write(gj.datasource(self.gjs), '/tmp/out')
-
-
-    def teardown_method(self):
-        shutil.rmtree(self.dirpath_tmp)
+    #
+    # def test_write_error(self):
+    #     gj = Geojson()
+    #     with pytest.raises(AssertionError):
+    #         self.shapefile.write(gj.datasource(self.gjs), '/tmp/out')
+    #
+    #
+    # def teardown_method(self):
+    #     shutil.rmtree(self.dirpath_tmp)

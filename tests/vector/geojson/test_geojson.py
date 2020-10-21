@@ -5,7 +5,6 @@ import json
 from vectorio.vector.geojson.geojson import Geojson
 from osgeo.ogr import DataSource
 from osgeo import gdal, ogr
-from vectorio.vector import GeoFile
 
 
 class TestGeojsonValid:
@@ -32,12 +31,14 @@ class TestGeojsonValid:
         drv = ogr.GetDriverByName('GeoJSON')
         assert isinstance(drv.Open(feat_collec), DataSource)
 
-    # def test_write(self):
-    #     gj = Geojson(self.gj_data)
-    #     fpath = gj.write(ds, self.gj_fpath)
-    #     assert os.path.exists(fpath)
-    #     assert gj.collection(GeoFile(gj).datasource(fpath)) != ''
-    #
-    # def teardown_method(self):
-    #     if os.path.exists(self.gj_fpath):
-    #         os.remove(self.gj_fpath)
+    def test_write(self):
+        gj = Geojson(self.gj_data)
+        fpath = gj.write(self.gj_fpath)
+        assert os.path.exists(fpath)
+        with open(fpath) as f:
+            gj = Geojson(f.read())
+            assert gj.feature_collection() != ''
+
+    def teardown_method(self):
+        if os.path.exists(self.gj_fpath):
+            os.remove(self.gj_fpath)

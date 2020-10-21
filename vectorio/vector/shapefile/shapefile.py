@@ -6,24 +6,18 @@ from osgeo import ogr, osr
 from osgeo.ogr import DataSource, Feature
 
 from vectorio.vector.geojson.geojson import Geojson
-from vectorio.vector.interfaces.ivector_file import IVectorFile
 from vectorio.vector.exceptions import (
     ShapefileInvalid, ShapefileIsEmpty,
-    ImpossibleCreateShapefileFromGeometryCollection, FileNotFound
+    ImpossibleCreateShapefileFromGeometryCollection, FileNotFound, ShapefilePathWasntPassed
 )
 from vectorio.vector._src.gdal_aux.cloned_ds import (
     GDALClonedDataSource
 )
 from vectorio.vector.shapefile.encodings import ShapeEncodings
-from vectorio.config import GDAL_DRIVERS_NAME
+from vectorio.config import GDAL_DRIVERS_NAME, NoneType
 from osgeo import osr
 from typing import Optional, Union
 from typeguard import typechecked
-
-NoneType = type(None)
-
-class ShapefilePathWasntPassed(Exception):
-    pass
 
 
 class Shapefile(Geojson):
@@ -36,8 +30,8 @@ class Shapefile(Geojson):
     # TODO: add srid in documentation
     @typechecked
     def __init__(
-        self, path: Optional[str] = None, search_encoding: bool = True,
-        search_encoding_exception: bool =True, srid_for_write: int = 4326
+        self, path: Optional[str] = None, search_encoding: bool = False,
+        search_encoding_exception: bool = True, srid_for_write: int = 4326
     ):
         self._driver = ogr.GetDriverByName(GDAL_DRIVERS_NAME['ESRI Shapefile'])
         self._search_encoding = search_encoding
@@ -49,7 +43,7 @@ class Shapefile(Geojson):
         self._srid_for_write = srid_for_write
 
     @typechecked
-    def path(self) -> Union[str, NoneType]:
+    def source(self) -> Union[str, NoneType]:
         return self._path
 
     def _has_data(self, ds: DataSource):

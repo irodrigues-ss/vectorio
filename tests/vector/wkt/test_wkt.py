@@ -1,7 +1,7 @@
 #!-*-coding:utf-8-*-
 
 import os
-from vectorio.vector import WKT, GeoFile
+from vectorio.vector import WKT
 from osgeo.ogr import DataSource
 
 
@@ -76,15 +76,16 @@ class TestWKTValid:
         srs.AutoIdentifyEPSG()
         assert srs.GetAuthorityCode(None) == str(srid)
 
-    # def test_write(self):
-    #     wkt = WKT()
-    #     ds = wkt.datasource(self.exp_data_lst[0])
-    #     fpath = wkt.write(ds, self.wkt_fpath)
-    #     assert os.path.exists(fpath)
-    #     geoc = wkt.collection(GeoFile(wkt).datasource(fpath))
-    #     assert geoc != ''
-    #     assert geoc.startswith('GEOMETRYCOLLECTION')
-    #
-    # def teardown_method(self):
-    #     if os.path.exists(self.wkt_fpath):
-    #         os.remove(self.wkt_fpath)
+    def test_write(self):
+        wkt = WKT(self.exp_data_lst[0])
+        fpath = wkt.write(self.wkt_fpath)
+        assert os.path.exists(fpath)
+        with open(fpath) as f:
+            wkt = WKT(f.read())
+            geoc = wkt.geometry_collection()
+            assert geoc != ''
+            assert geoc.startswith('GEOMETRYCOLLECTION')
+
+    def teardown_method(self):
+        if os.path.exists(self.wkt_fpath):
+            os.remove(self.wkt_fpath)

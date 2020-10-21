@@ -5,6 +5,7 @@ from tests.config import FILESDIR_FROM_FIXTURES
 from vectorio.vector import Shapefile
 from vectorio.vector import DataSourceReprojected
 from vectorio.vector import ShapefileCompressed
+from vectorio.compress import Zip
 
 
 class TestDataSourceReprojected:
@@ -13,10 +14,10 @@ class TestDataSourceReprojected:
         self.shp_utm_22 = os.path.join(
             FILESDIR_FROM_FIXTURES, 'data_utm22.zip'
         )
-        self.shapefile = ShapefileAsZip(Shapefile())
+        self.shapefile = ShapefileCompressed(Shapefile(self.shp_utm_22), compress_engine=Zip())
 
     def test_ref(self):
-        ds_as_utm22 = self.shapefile.datasource(self.shp_utm_22)
+        ds_as_utm22 = self.shapefile.datasource()
         dsr = DataSourceReprojected(ds_as_utm22, out_srid=4674).ref()
         assert dsr.GetLayerCount() == 1
         lyr = dsr.GetLayer()

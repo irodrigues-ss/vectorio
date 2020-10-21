@@ -31,7 +31,7 @@ class ShapefileCompressed:
 
     @typechecked
     def datasource(self) -> DataSource:
-        dir_with_files = self._compress_engine.decompress(self._shapefile.path())
+        dir_with_files = self._compress_engine.decompress(self._shapefile.source())
         files_required = FileRequiredByExtension(
             dir_with_files, ['shp', 'dbf', 'shx', 'prj']
         )
@@ -64,9 +64,9 @@ class ShapefileCompressed:
         return self._shapefile.geometry_collection(nmax, ds)
 
     @typechecked
-    def _write(self, ds: DataSource, out_path: str, srid: int) -> str:
+    def _write(self, ds: DataSource, out_path: str) -> str:
         assert out_path.endswith('.zip'), 'Output file have has .zip extension.'
-        out_shp = self._shapefile.write(ds, out_path.replace('.zip', '.shp'), srid)
+        out_shp = self._shapefile.write(out_path.replace('.zip', '.shp'), ds=ds)
         files = [
             out_shp,
             out_shp.replace('.shp', '.dbf'),
@@ -79,7 +79,7 @@ class ShapefileCompressed:
         return out_zip
 
     @typechecked
-    def write(self, out_path: str, ds: DataSource = None, srid: int = 4326) -> str:
+    def write(self, out_path: str, ds: DataSource = None) -> str:
         if ds is None:
-            return self._write(self.datasource(), out_path, srid)
-        return self._write(ds, out_path, srid)
+            return self._write(self.datasource(), out_path)
+        return self._write(ds, out_path)

@@ -28,10 +28,15 @@ class VectorReprojected(IVector):
         self._in_srid = in_srid
         self._out_srid = out_srid
 
-    def datasource(self) -> DataSource:
-        return DataSourceReprojected(
-            self._vector.datasource(), self._in_srid, self._out_srid
-        ).ref()
+    def datasource(self, source: str = None) -> DataSource:
+        if source is None:
+            ds = self._vector.datasource()
+        else:
+            ds = self._vector.datasource(source)
+        return DataSourceReprojected(ds, self._in_srid, self._out_srid).ref()
+
+    def source(self):
+        return self._vector.source()
 
     def geometries(self, nmax: int = None, ds: DataSource = None) -> Generator[str, None, None]:
         if ds is None:

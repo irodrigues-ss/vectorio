@@ -22,10 +22,8 @@ class UTMZone:
     def __init__(self):
         os.environ['SHAPE_ENCODING'] = 'ISO-8859-3'
         self._world_utm_grid_ds = ShapefileCompressed(
-            Shapefile(search_encoding=False), compress_engine=Zip()
-        ).datasource(
-            os.path.join(STATIC_DIR, 'World_UTM_Grid_HM.zip')
-        )
+            Shapefile(os.path.join(STATIC_DIR, 'World_UTM_Grid_HM.zip'), search_encoding=False), compress_engine=Zip()
+        ).datasource()
         self._drv_mem = ogr.GetDriverByName(GDAL_DRIVERS_NAME['MEMORY'])
 
     def _intersection_ds(self, ds_utm: DataSource, inp_ds: DataSource):
