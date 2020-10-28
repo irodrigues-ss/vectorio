@@ -1,35 +1,22 @@
 #!-*-coding:utf-8-*-
+
 from uuid import uuid4
 from typing import Generator, Optional
 from osgeo import ogr, osr
 from osgeo.ogr import Geometry, DataSource, Feature
 
-from vectorio.vector.geo_output.wkt.geometry import GeometryWKT
-from vectorio.vector.geo_output.wkt.geometry_collection import GeometryCollectionWKT
-from vectorio.vector.interfaces.ivector import IVector
-from vectorio.vector.interfaces.ivector_data import IVectorData
-from vectorio.vector.exceptions import WKTInvalid
+from vectorio.vector.output.wkt.geometry import GeometryWKT
+from vectorio.vector.output.wkt.geometry_collection import GeometryCollectionWKT
+from vectorio.vector.interfaces.ivectorio import IVectorIO
+from vectorio.vector.exceptions import WKTInvalid, InvalidOperationForThisDataType
 from vectorio.vector.wkt.geom_type_factory import GeometryTypeFactory
-from vectorio.config import GDAL_DRIVERS_NAME
+from vectorio.config import GDAL_DRIVERS_NAME, NoneType
 from typeguard import typechecked
 from typing import Union
 from vectorio.vector.wkt.wkt_geom_collec import WKTGeometry
 
 
-class InvalidOperationForThisDataType(Exception):
-    pass
-
-
-def call_if(obj, func_name, nmax, ds = None):
-    func = getattr(obj, func_name)
-    ds_creator = getattr(obj, 'datasource')
-    if ds is None:
-        return func(nmax, ds_creator())
-    return func(nmax, ds)
-
-
-
-class WKT(IVector):
+class WKT(IVectorIO):
 
     _gt_factory: GeometryTypeFactory
     _initial_srid: int
@@ -47,6 +34,11 @@ class WKT(IVector):
         srs.ImportFromEPSG(self._initial_srid)
         return srs
 
+    @typechecked
+    def source(self) -> Union[str, NoneType]:
+        return self._data
+
+    @typechecked
     def datasource(self) -> DataSource:
         drv = ogr.GetDriverByName(GDAL_DRIVERS_NAME['MEMORY'])
         out_ds = drv.CreateDataSource(str(uuid4()))
@@ -72,35 +64,44 @@ class WKT(IVector):
         return out_ds
 
     @typechecked
-    def geometries(self, nmax: int = None, ds: DataSource = None) -> Generator[GeometryWKT, None, None]:
+    def geometries(
+            self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ) -> Generator[GeometryWKT, None, None]:
         wkt_geom = WKTGeometry(ds, self._as_geometry_collection)
         if ds is None:
             wkt_geom = WKTGeometry(self.datasource(), self._as_geometry_collection)
         return wkt_geom.geometries(nmax)
 
     @typechecked
-    def features(self, nmax: Optional[int] = None, ds: Optional[DataSource] = None):
+    def features(
+        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ):
         raise InvalidOperationForThisDataType('This Data type not has features.')
 
     @typechecked
-    def feature_collection(self, nmax: Optional[int] = None, ds: Optional[DataSource] = None):
+    def feature_collection(
+        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ):
         raise InvalidOperationForThisDataType('This Data type not has feature collection.')
 
     @typechecked
-    def geometry_collection(self, nmax: Optional[int] = None, ds: Optional[DataSource] = None) -> Union[GeometryCollectionWKT, str]:
+    def geometry_collection(
+        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ) -> Union[GeometryCollectionWKT, str]:
         wkt_geom = WKTGeometry(ds, self._as_geometry_collection)
         if ds is None:
             wkt_geom = WKTGeometry(self.datasource(), self._as_geometry_collection)
         return wkt_geom.collection(nmax)
 
+    @typechecked
     def _write(self, ds: DataSource, out_path: str) -> str:
         self._validate_basedir(out_path)
         with open(out_path, 'w') as f:
             f.write(self.geometry_collection(ds=ds))
         return out_path
 
-    def write(self, out_path: str, ds: DataSource = None) -> str:
+    @typechecked
+    def write(self, out_path: str, ds: Optional[Union[DataSource, NoneType]] = None) -> str:
         if ds is None:
             return self._write(self.datasource(), out_path)
         return self._write(ds, out_path)
-

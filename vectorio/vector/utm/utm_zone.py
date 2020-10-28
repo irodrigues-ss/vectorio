@@ -12,6 +12,7 @@ from vectorio.vector.exceptions import (
 )
 from vectorio.config import GDAL_DRIVERS_NAME, PRJ_WGS84
 from vectorio.vector import DataSourceReprojected
+from typeguard import typechecked
 
 
 class UTMZone:
@@ -39,6 +40,7 @@ class UTMZone:
             )
         return ds_out
 
+    @typechecked
     def zones(self, inp_ds: DataSource) -> set:
         ds = self._intersection_ds(self._world_utm_grid_ds, inp_ds)
         lyr = ds.GetLayer(0)
@@ -50,6 +52,7 @@ class UTMZone:
             result.add(zone)
         return result
 
+    @typechecked
     def zone_from_biggest_geom(self, inp_ds: DataSource, wkt_prj_for_metrics: str, in_wkt_prj=PRJ_WGS84):
         inter_ds = self._intersection_ds(self._world_utm_grid_ds, inp_ds)
         inter_lyr = inter_ds.GetLayer()

@@ -46,6 +46,7 @@ class Shapefile(Geojson):
     def source(self) -> Union[str, NoneType]:
         return self._path
 
+    @typechecked
     def _has_data(self, ds: DataSource):
         lyr = ds.GetLayer()
         if lyr.GetFeature(0) is None:
@@ -53,7 +54,8 @@ class Shapefile(Geojson):
                 "Shapefile is empty. Please, check if your shapefile has data."
             )
 
-    def _datasource(self, path: str) -> DataSource:
+    @typechecked
+    def _datasource(self, path: Union[str, NoneType]) -> DataSource:
         if path is None:
             raise ShapefilePathWasntPassed("the shapefile path wasn't passed. The path value is None.")
 
@@ -76,7 +78,7 @@ class Shapefile(Geojson):
         return GDALClonedDataSource(ds).ref()
 
     @typechecked
-    def datasource(self, path: Optional[str] = None) -> DataSource:
+    def datasource(self, path: Optional[Union[str, NoneType]] = None) -> DataSource:
         if path is None:
             return self._datasource(self._path)
         return self._datasource(path)
@@ -114,7 +116,7 @@ class Shapefile(Geojson):
         return out_path
 
     @typechecked
-    def write(self, out_path: str, ds: Optional[DataSource] = None) -> str:
+    def write(self, out_path: str, ds: Optional[Union[DataSource, NoneType]] = None) -> str:
         if ds is None:
             return self._write(self.datasource(), out_path)
         return self._write(ds, out_path)

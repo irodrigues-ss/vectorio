@@ -2,6 +2,9 @@
 
 
 
+class InvalidOperationForThisDataType(Exception):
+    pass
+
 
 class KMLInvalid(Exception):
     pass

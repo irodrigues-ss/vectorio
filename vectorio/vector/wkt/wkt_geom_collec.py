@@ -6,8 +6,8 @@ from osgeo.ogr import Geometry, DataSource, Feature
 from typeguard import typechecked
 from typing import Union
 from vectorio.config import GEOMETRYCOLLECTION_PREFIX, GEOM_COLLECTION_LEN
-from vectorio.vector.geo_output.wkt.geometry import GeometryWKT
-from vectorio.vector.geo_output.wkt.geometry_collection import GeometryCollectionWKT
+from vectorio.vector.output.wkt.geometry import GeometryWKT
+from vectorio.vector.output.wkt.geometry_collection import GeometryCollectionWKT
 
 
 class WKTGeometry:
@@ -16,28 +16,22 @@ class WKTGeometry:
         self._ds = ds
         self._as_geometry_collection = as_geometry_collection
 
-    @typechecked
-    def _is_geometry_collection(self, geom: Geometry) -> bool:
-       return geom.ExportToWkt()[:GEOM_COLLECTION_LEN].startswith(GEOMETRYCOLLECTION_PREFIX)
+    # @typechecked
+    # def _is_geometry_collection(self, geom: Geometry) -> bool:
+    #    return geom.ExportToWkt()[:GEOM_COLLECTION_LEN].startswith(GEOMETRYCOLLECTION_PREFIX)
 
     @typechecked
     def geometries(self, nmax: int = None) -> Generator[GeometryWKT, None, None]:
         ds = self._ds
         lyr = ds.GetLayer(0)
         if lyr.GetFeatureCount() == 0:
-            yield 'GEOMETRY_EMPTY'
+            yield GeometryWKT() # GeometryEmpty
 
-        feat = lyr.GetFeature(0)
-        geom = feat.geometry()
-
-        if self._is_geometry_collection(geom):
-            for i, geom_item in enumerate(geom):
-                yield GeometryWKT(geom_item)
-
-                if i + 1 == nmax:
-                    break
-        else:
+        for feat in lyr:
+            geom = feat.geometry()
             yield GeometryWKT(geom)
+
+        lyr.ResetReading()
 
     @typechecked
     def collection(self, nmax: int = None) -> Union[GeometryCollectionWKT, str]:

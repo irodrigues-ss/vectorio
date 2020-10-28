@@ -5,7 +5,7 @@ class Vertices:
     _FUNC_FOR_COUNT_VERTICES = {}
 
     def __init__(self):
-        # "switch" method for count vertices
+        # "switch" useful for map the methods for count vertices by geometry types
         self._FUNC_FOR_COUNT_VERTICES = {
             'POINT': self._point,
             'LINESTRING': self._line,
@@ -29,13 +29,11 @@ class Vertices:
 
     def _multipolygon(self, geom):
         vertices = []
-        rings = []
         for idx_geom in range(geom.GetGeometryCount()):
             polygon = geom.GetGeometryRef(idx_geom)
             rings = []
             for idx_ring in range(polygon.GetGeometryCount()):
                 ring = polygon.GetGeometryRef(idx_ring)
-                #print(ring.GetPointCount())
                 rings.append(ring.GetPointCount())
             vertices.append(rings)
         return vertices
@@ -57,7 +55,8 @@ class Vertices:
         return vertices
 
     def tell(self, geom):
-        vertices_counter = self._FUNC_FOR_COUNT_VERTICES.get(geom.GetGeometryName())
+        gtype = geom.GetGeometryName()
+        vertices_counter = self._FUNC_FOR_COUNT_VERTICES.get(gtype)
         if vertices_counter is None:
-            raise Exception('')
+            raise Exception(f'Function for count vertices of {gtype} not found.') # TODO: Create as custom exception
         return vertices_counter(geom)

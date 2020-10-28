@@ -3,26 +3,19 @@
 from typing import Generator
 from osgeo.ogr import DataSource
 from osgeo import ogr, osr
-from vectorio.vector.interfaces.ivector import IVector
+from vectorio.vector.interfaces.ivectorio import IVectorIO
 from vectorio.vector import DataSourceReprojected
 from typing import Optional
 
-# def call_if(obj, func_name, nmax, ds = None):
-#     func = getattr(obj, func_name)
-#     ds_creator = getattr(obj, 'datasource')
-#     if ds is None:
-#         return func(nmax, ds_creator())
-#     return func(nmax, ds)
 
-
-class VectorReprojected(IVector):
+class VectorReprojected(IVectorIO):
 
     _vector = None
     _in_srid = None
     _out_srid = None
 
     def __init__(
-        self, vector: IVector, in_srid: int=None, out_srid: int=None
+        self, vector: IVectorIO, in_srid: int=None, out_srid: int=None
     ):
         self._vector = vector
         self._in_srid = in_srid
