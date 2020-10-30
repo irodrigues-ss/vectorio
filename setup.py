@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 
 setup(name='vectorio',
-    version='1.2.7',
+    version='2.0.0',
     description='Geoprocessing utility for working with vector data',
     author='Igor Rodrigues Sousa Silva',
     long_description=long_description,
@@ -18,6 +18,7 @@ setup(name='vectorio',
     tests_require=['pytest'],
     install_requires=[
         'rarfile==3.1',
+        'typeguard==2.9.1'
     ],
     include_package_data=True,
     classifiers=[

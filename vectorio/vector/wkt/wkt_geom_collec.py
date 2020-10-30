@@ -16,20 +16,33 @@ class WKTGeometry:
         self._ds = ds
         self._as_geometry_collection = as_geometry_collection
 
-    # @typechecked
-    # def _is_geometry_collection(self, geom: Geometry) -> bool:
-    #    return geom.ExportToWkt()[:GEOM_COLLECTION_LEN].startswith(GEOMETRYCOLLECTION_PREFIX)
+    @typechecked
+    def _is_geometry_collection(self, geom: Geometry) -> bool:
+       return geom.ExportToWkt()[:GEOM_COLLECTION_LEN].startswith(GEOMETRYCOLLECTION_PREFIX)
 
     @typechecked
     def geometries(self, nmax: int = None) -> Generator[GeometryWKT, None, None]:
         ds = self._ds
         lyr = ds.GetLayer(0)
         if lyr.GetFeatureCount() == 0:
-            yield GeometryWKT() # GeometryEmpty
+            yield GeometryWKT()  # GeometryEmpty
 
-        for feat in lyr:
+        if lyr.GetFeatureCount() == 1:
+            feat = lyr.GetFeature(0)
             geom = feat.geometry()
-            yield GeometryWKT(geom)
+            if self._is_geometry_collection(geom):
+                for i, geom_inner in enumerate(geom):
+                    yield GeometryWKT(geom_inner)
+                    if i + 1 == nmax:
+                        break
+            else:
+                yield GeometryWKT(geom)
+        else:
+            for i, feat in enumerate(lyr):
+                geom = feat.geometry()
+                yield GeometryWKT(geom)
+                if i + 1 == nmax:
+                    break
 
         lyr.ResetReading()
 

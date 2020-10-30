@@ -1,6 +1,13 @@
 #!-*-coding:utf-8-*-
 
 
+class ImpossibleFindUTMZone(Exception):
+    pass
+
+
+class ImpossibleFindUTMZoneGeometryHasSelfIntersection(ImpossibleFindUTMZone):
+    pass
+
 
 class InvalidOperationForThisDataType(Exception):
     pass
