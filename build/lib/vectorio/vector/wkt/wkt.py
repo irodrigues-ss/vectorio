@@ -1,29 +1,31 @@
 #!-*-coding:utf-8-*-
 
 from uuid import uuid4
-from typing import Generator
-from functools import reduce
-
+from typing import Generator, Optional
 from osgeo import ogr, osr
 from osgeo.ogr import Geometry, DataSource, Feature
 
-from vectorio.vector.interfaces.ivector_data import IVectorData
-from vectorio.vector.exceptions import WKTInvalid
+from vectorio.vector.output.wkt.geometry import GeometryWKT
+from vectorio.vector.output.wkt.geometry_collection import GeometryCollectionWKT
+from vectorio.vector.interfaces.ivectorio import IVectorIO
+from vectorio.vector.exceptions import WKTInvalid, InvalidOperationForThisDataType
 from vectorio.vector.wkt.geom_type_factory import GeometryTypeFactory
-from vectorio.config import GDAL_DRIVERS_NAME
+from vectorio.config import GDAL_DRIVERS_NAME, NoneType
+from typeguard import typechecked
+from typing import Union
+from vectorio.vector.wkt.wkt_geom_collec import WKTGeometry
 
 
-GEOMETRYCOLLECTION_PREFIX = 'GEOMETRYCOLLECTION'
+class WKT(IVectorIO):
 
+    _gt_factory: GeometryTypeFactory
+    _initial_srid: int
+    _as_geometry_collection: bool
+    _data: str
 
-class WKT(IVectorData):
-
-    _gt_factory = None
-    _initial_srid = 0
-    _as_geometry_collection = True
-
-    def __init__(self, as_geometry_collection=True, srid=4326):
+    def __init__(self, data: str = None, as_geometry_collection=True, srid=4326):
         self._gt_factory = GeometryTypeFactory()
+        self._data = data
         self._initial_srid = srid
         self._as_geometry_collection = as_geometry_collection
 
@@ -32,20 +34,24 @@ class WKT(IVectorData):
         srs.ImportFromEPSG(self._initial_srid)
         return srs
 
-    def datasource(self, input_data: str) -> DataSource:
+    @typechecked
+    def source(self) -> Union[str, NoneType]:
+        return self._data
+
+    @typechecked
+    def datasource(self) -> DataSource:
         drv = ogr.GetDriverByName(GDAL_DRIVERS_NAME['MEMORY'])
         out_ds = drv.CreateDataSource(str(uuid4()))
-        geom = None
-        if not bool(input_data):
+
+        if not bool(self._data):
             raise WKTInvalid(
                 'Invalid wkt data. Please, check if data is a wkt valid.'
             )
-
-        geom = ogr.CreateGeometryFromWkt(input_data)
+        geom = ogr.CreateGeometryFromWkt(self._data)
 
         if geom is None:
             raise WKTInvalid(
-                f'Invalid wkt data. Please, check is the data "{input_data}" is in wkt pattern.'
+                f'Invalid wkt data. Please, check is the data "{self._data}" is in wkt pattern.'
             )
         l1 = out_ds.CreateLayer(
             str(uuid4()), self._srs(),
@@ -57,32 +63,45 @@ class WKT(IVectorData):
         l1.SetFeature(feat)
         return out_ds
 
-    def items(self, ds: DataSource) -> Generator[str, None, None]:
-        lyr = ds.GetLayer(0)
-        if lyr.GetFeatureCount() == 0:
-            yield 'GEOMETRY_EMPTY'
+    @typechecked
+    def geometries(
+            self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ) -> Generator[GeometryWKT, None, None]:
+        wkt_geom = WKTGeometry(ds, self._as_geometry_collection)
+        if ds is None:
+            wkt_geom = WKTGeometry(self.datasource(), self._as_geometry_collection)
+        return wkt_geom.geometries(nmax)
 
-        for idx_feat in range(lyr.GetFeatureCount()):
-            feat = lyr.GetFeature(idx_feat)
-            geom = feat.geometry()
-            if geom is not None:
-                yield geom.ExportToWkt()
+    @typechecked
+    def features(
+        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ):
+        raise InvalidOperationForThisDataType('This Data type not has features.')
 
-    def collection(self, ds: DataSource) -> str:
-        out_wkt = reduce(
-            lambda x,y: x + ',' + y, self.items(ds)
-        )
-        if out_wkt == 'GEOMETRY_EMPTY':
-            return 'GEOMETRY_EMPTY'
+    @typechecked
+    def feature_collection(
+        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ):
+        raise InvalidOperationForThisDataType('This Data type not has feature collection.')
 
-        if out_wkt.startswith(GEOMETRYCOLLECTION_PREFIX):
-            return out_wkt
-        else:
-            if self._as_geometry_collection:
-                return f'{GEOMETRYCOLLECTION_PREFIX} ({out_wkt})'
-            else:
-                return out_wkt
+    @typechecked
+    def geometry_collection(
+        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ) -> Union[GeometryCollectionWKT, str]:
+        wkt_geom = WKTGeometry(ds, self._as_geometry_collection)
+        if ds is None:
+            wkt_geom = WKTGeometry(self.datasource(), self._as_geometry_collection)
+        return wkt_geom.collection(nmax)
 
-    def write(self, ds: DataSource, out_path: str) -> str:
+    @typechecked
+    def _write(self, ds: DataSource, out_path: str) -> str:
         self._validate_basedir(out_path)
-        return self._write_by_collection(ds, out_path)
+        with open(out_path, 'w') as f:
+            f.write(self.geometry_collection(ds=ds))
+        return out_path
+
+    @typechecked
+    def write(self, out_path: str, ds: Optional[Union[DataSource, NoneType]] = None) -> str:
+        if ds is None:
+            return self._write(self.datasource(), out_path)
+        return self._write(ds, out_path)

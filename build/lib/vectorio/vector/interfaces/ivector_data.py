@@ -3,10 +3,10 @@
 from abc import abstractmethod
 from osgeo.ogr import DataSource
 from typing import Generator
-from vectorio.vector.interfaces.ivector import IVector
+from vectorio.vector.interfaces.ivectorio import IVectorIO
 
 
-class IVectorData(IVector):
+class IVectorIOData(IVectorIO):
 
     @abstractmethod
     def datasource(self, input_data: str) -> DataSource:

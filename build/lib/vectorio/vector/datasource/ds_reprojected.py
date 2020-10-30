@@ -38,7 +38,6 @@ class DataSourceReprojected:
             self._inp_ds.name, inp_lyr, self._in_srid, self._out_srid,
             self._in_wkt_prj, self._out_wkt_prj, self._use_wkt_prj
         )
-
         coord_transformator = srs.coord_transformator()
         out_ds = self._driver_mem.CreateDataSource(str(uuid4()))
         out_lyr = GDALClonedLayer(out_ds, inp_lyr).ref()
@@ -53,4 +52,6 @@ class DataSourceReprojected:
                 out_lyr.CreateFeature(gdal_feature.ref())
             in_feature = inp_lyr.GetNextFeature()
 
+        inp_lyr.ResetReading()
+        out_lyr.ResetReading()
         return out_ds

@@ -1,13 +1,13 @@
 Metadata-Version: 2.1
 Name: vectorio
-Version: 1.2.7
+Version: 2.0.0
 Summary: Geoprocessing utility for working with vector data
 Home-page: https://github.com/igor-rodrigues-ss/vectorio
 Author: Igor Rodrigues Sousa Silva
 Author-email: igor.rodrigues.ss10@gmail.com
 License: UNKNOWN
 Description: # Vector IO - Geoprocessing utility for working with vector data.
-        
+        ## \> Deprecated README. In the next version will be create new Readme.<
         ## Requirements
         - python >= 3.6
         - gdal >= 2.2
@@ -98,8 +98,8 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         - Reading from geojson file
         
         ```python
-        from vectorio.vector import GeoFile
-        gf_gjs = GeoFile(gjs)
+        from vectorio.vector import GeoData
+        gf_gjs = GeoData(gjs)
         ds = gf_gjs.datasource('data.geojson')
         gf_gjs.collection(ds)
         ```
@@ -151,8 +151,8 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         - Reading from wkt file
         
         ```python
-        from vectorio.vector import GeoFile
-        gf_wkt = GeoFile(wkt)
+        from vectorio.vector import GeoData
+        gf_wkt = GeoData(wkt)
         ds = gf_wkt.datasource('data.wkt')
         gf_wkt.collection(ds)
         ```
@@ -231,14 +231,14 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         
         #### Reprojecting a Vector
         
-        The spatial reprojection works with same geography type thats implements the interface IVector.
+        The spatial reprojection works with same geography type thats implements the interface IVectorIO.
         If the input srid (in_srid) are be ommited, will used the srid from geometry.
         
         - Reprojecting a shapefile
         
         ```python
-        from vectorio.vector import Shapefile, ShapefileAsZip, VectorReprojected
-        shape = VectorReprojected(
+        from vectorio.vector import Shapefile, ShapefileAsZip, VectorIOReprojected
+        shape = VectorIOReprojected(
             ShapefileAsZip(Shapefile()), in_srid=31982, out_srid=4674
         )
         ds = shape.datasource('data_utm22.zip')
@@ -256,8 +256,8 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         By default the wkt is in WGS84 spatial reference.
         
         ```python
-        from vectorio.vector import WKT, VectorReprojected
-        wkt = VectorReprojected(WKT(), out_srid=31982)
+        from vectorio.vector import WKT, VectorIOReprojected
+        wkt = VectorIOReprojected(WKT(), out_srid=31982)
         ds = wkt.datasource('POLYGON((-49.698036566343376 -9.951372897703846,-51.148231878843376 -11.591810720955946,-48.467567816343376 -11.763953408065282,-49.698036566343376 -9.951372897703846))')
         
         wkt.collection(ds)  # read all data
@@ -273,8 +273,8 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         By default the geojson is in WGS84 spatial reference.
         
         ```python
-        from vectorio.vector import Geojson, VectorReprojected
-        gjs = VectorReprojected(Geojson(), out_srid=31982)
+        from vectorio.vector import Geojson, VectorIOReprojected
+        gjs = VectorIOReprojected(Geojson(), out_srid=31982)
         ds = gjs.datasource('{"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon","coordinates": [[[-45.992889404296875,-9.654907854199012],[-46.12884521484374,-9.72259300616733],[-45.96954345703125,-9.738835407948073],[-45.992889404296875,-9.654907854199012]]]}}]}')
         
         gjs.collection(ds)  # read all data
@@ -356,8 +356,8 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         - This functionality will search the UTM Zone from some geometry.
         
         ```python
-        from vectorio.vector import UTMZone, VectorReprojected, WKT
-        ds_wkt = VectorReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
+        from vectorio.vector import UTMZone, VectorIOReprojected, WKT
+        ds_wkt = VectorIOReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
         utm = UTMZone()
         utm.zones(ds_wkt) # getting all UTM Zones that intersect with the geometry
         ```
@@ -411,7 +411,7 @@ Description: # Vector IO - Geoprocessing utility for working with vector data.
         
         #### Reprojecting a datasource directly
         
-        - To make spatial reprojection use the class VectorReprojected [metioned above](#reprojecting-a-vector). However, in same moment will be necessary reproject a datasource directly, for this use the DataSourceReprojected class.
+        - To make spatial reprojection use the class VectorIOReprojected [metioned above](#reprojecting-a-vector). However, in same moment will be necessary reproject a datasource directly, for this use the DataSourceReprojected class.
         
         - **Signature**: *DataSourceReprojected(inp_ds: DataSource, in_srid: int=None, out_srid: int=None, in_wkt_prj=None, out_wkt_prj=None, use_wkt_prj: bool=False)*
             - **inp_ds**: required. Datasource that will be reprojected.

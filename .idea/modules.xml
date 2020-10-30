@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../sinaflor_geo_be/.idea/sinaflor_geo_be.iml" filepath="$PROJECT_DIR$/../sinaflor_geo_be/.idea/sinaflor_geo_be.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/vectorio.iml" filepath="$PROJECT_DIR$/.idea/vectorio.iml" />
     </modules>
   </component>

@@ -3,14 +3,14 @@
 from vectorio.vector.composite.interfaces.ivector_composite import (
     IVectorComposite
 )
-from vectorio.vector.interfaces.ivector import IVector
+from vectorio.vector.interfaces.ivectorio import IVectorIO
 from osgeo.ogr import DataSource
 from typing import Generator
 
 
 class VectorComposite(IVectorComposite):
 
-    def __init__(self, input_vector: IVector, output_vector: IVector):
+    def __init__(self, input_vector: IVectorIO, output_vector: IVectorIO):
         self._input_vector = input_vector
         self._output_vector = output_vector
 
