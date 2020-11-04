@@ -1,6 +1,5 @@
 # Vector IO - Geoprocessing utility for working with vector data.
-## \> Deprecated README. In the next version will be create new Readme.<
-## Requirements
+## \> WIP: UPDATING DOCS. The code examples already updated.
 - python >= 3.6
 - gdal >= 2.2
 - rar
@@ -62,38 +61,40 @@ Working with geojson data and geojson file. By default, the datasource is create
 ```python
 from vectorio.vector import Geojson
 data = '{"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon","coordinates": [[[-44.89013671875,-6.577303118123875],[-46.29638671874999,-7.460517719883772],[-44.4287109375,-7.318881730366743],[-44.89013671875,-6.577303118123875]]]}}]}'
-gjs = Geojson()
+gjs = Geojson(data)
 ```
 
 - Read all data
 
 ```python
-ds = gjs.datasource(data)
-gjs.collection(ds)
+# Features
+gjs.feature_collection()
+
+# Geometries
+gjs.geometry_collection()
 ```
 
 - Reading and iterating over each feature
 
 ```python
-ds = gjs.datasource(data)
-for item in gjs.items(ds):
-    print(item)
+
+for feat in gjs.features():
+    print(feat)
 ```
+
 
 - Creating a new geojson file
 
 ```python
-ds = gjs.datasource(data)
-gjs.write(ds, 'data.geojson')
+gjs.write('data.geojson')
 ```
 
 - Reading from geojson file
 
 ```python
-from vectorio.vector import GeoData
-gf_gjs = GeoData(gjs)
-ds = gf_gjs.datasource('data.geojson')
-gf_gjs.collection(ds)
+with open('data.geojson') as f:
+    gj= Geojson(f.read())
+    gj.feature_collection()
 ```
 
 <br/>
@@ -115,38 +116,35 @@ WKT(as_geometry_collection=True, srid=4326)
 ```python
 from vectorio.vector import WKT
 data = "GEOMETRYCOLLECTION(POINT(-48.740641051554974 -9.249606262178954), LINESTRING(-50.278726989054974 -11.023166202413554,-48.608805114054974 -10.375450023701761))"
-wkt = WKT()
+wkt = WKT(data)
 ```
 
 - Read all data
 
 ```python
-ds = wkt.datasource(data)
-wkt.collection(ds)
+wkt.geometry_collection()
 ```
 
 - Reading and iterating over each geometry
 
 ```python
-ds = wkt.datasource(data)
-for item in wkt.items(ds):
-    print(item)
+for geom in wkt.geometries():
+    print(geom)
 ```
 
 - Creating a new wkt file
 
 ```python
-ds = wkt.datasource(data)
-wkt.write(ds, 'data.wkt')
+wkt.write('data.wkt')
 ```
 
 - Reading from wkt file
 
 ```python
 from vectorio.vector import GeoData
-gf_wkt = GeoData(wkt)
-ds = gf_wkt.datasource('data.wkt')
-gf_wkt.collection(ds)
+with open('data.wkt') as f:
+    wkt = WKT(f.read())
+    wkt.geometry_collection()
 ```
 
 <br/>
@@ -159,29 +157,32 @@ Working with read and write shapefile. Is supported shapefiles compressed as .zi
 
 ```python
 from vectorio.vector import Shapefile
-shape = Shapefile()
+shape = Shapefile('data.shp')
 ```
 
 - Read all data from .shp file
 
 ```python
-ds = shape.datasource('data.shp')
-shape.collection(ds)
+shape.feature_collection()
 ```
 
 - Reading and iterating over each feature from .shp file
 
 ```python
-ds = shape.datasource('data.shp')
-for item in shape.items(ds):
-    print(item)
+# Interanting over features
+for feat in shape.features():
+    print(feat)
+
+# Interanting over geometries
+for geom in shape.geometries():
+    print(geom)
 ```
 
 - Creating a new shapefile (Are be created the files .shp, .shx, .dbf, .prj)
 
 ```python
-ds = shape.datasource('data.shp')
-shape.write(ds, 'out.shp')
+
+shape.write('out.shp')
 # >>> out.shp
 ```
 
@@ -192,30 +193,32 @@ By default the algorithm will search recusivly the files .shp, .shx, .dbf, .prj 
 - Processing from zip
 
 ```python
-from vectorio.vector import Shapefile, ShapefileAsZip
-shape = ShapefileAsZip(Shapefile())
-ds = shape.datasource('data.zip') # creating a datasource
-shape.collection(ds)  # read all data
+from vectorio.vector import Shapefile, ShapefileCompressed
+from vectorio.compress import Zip
 
-for item in shape.items(ds):  # iterating over each item
-    print(item)
+shape = ShapefileAsZip(Shapefile('data.zip'), compress_engine=Zip())
+shape.feature_collection() # reading all data
 
-shape.write(ds, 'out.zip') # Creating a shapefile compressed as .zip
+for feat in shape.features():  # iterating over each item
+    print(feat)
+
+shape.write('out.zip') # Creating a shapefile compressed as .zip
 # >>> out.zip
 ```
 
 - Processing from .rar (*available only for linux OS*)
 
 ```python
-from vectorio.vector import Shapefile, ShapefileAsRar
-shape = ShapefileAsRar(Shapefile())
-ds = shape.datasource('data.rar') # creating a datasource
-shape.collection(ds)  # read all data
+from vectorio.vector import Shapefile, ShapefileCompressed
+from vectorio.compress import Rar
 
-for item in shape.items(ds):  # iterating over each item
-    print(item)
+shape = ShapefileAsZip(Shapefile('data.rar'), compress_engine=Rar())
+shape.feature_collection()  # read all data
 
-shape.write(ds, 'out.rar') # Creating a shapefile compressed as .rar
+for feat in shape.features():  # iterating over each item
+    print(feat)
+
+shape.write('out.rar') # Creating a shapefile compressed as .rar
 # >>> out.rar
 ```
 
@@ -229,18 +232,19 @@ If the input srid (in_srid) are be ommited, will used the srid from geometry.
 - Reprojecting a shapefile
 
 ```python
-from vectorio.vector import Shapefile, ShapefileAsZip, VectorIOReprojected
-shape = VectorIOReprojected(
-    ShapefileAsZip(Shapefile()), in_srid=31982, out_srid=4674
+from vectorio.vector import Shapefile, ShapefileCompressed, VectorReprojected
+from vectorio.compressed import Zip
+shape = VectorReprojected(
+    ShapefileCompressed(Shapefile('data_utm22.zip'), compress_engine=Zip()),
+    in_srid=31982, out_srid=4674
 )
-ds = shape.datasource('data_utm22.zip')
 
-shape.collection(ds)  # read all data
+shape.feature_collection()  # reading all data
 
-for item in shape.items(ds):  # iterating by each feature
-    print(item)
+for feat in shape.features():  # iterating by each feature
+    print(feat)
 
-shape.write(ds, 'data_reprojected.zip')  # creating a new shapefile
+shape.write('data_reprojected.zip')  # creating a new shapefile
 ```
 
 - Reprojecting a WKT
@@ -248,16 +252,16 @@ shape.write(ds, 'data_reprojected.zip')  # creating a new shapefile
 By default the wkt is in WGS84 spatial reference.
 
 ```python
-from vectorio.vector import WKT, VectorIOReprojected
-wkt = VectorIOReprojected(WKT(), out_srid=31982)
-ds = wkt.datasource('POLYGON((-49.698036566343376 -9.951372897703846,-51.148231878843376 -11.591810720955946,-48.467567816343376 -11.763953408065282,-49.698036566343376 -9.951372897703846))')
+from vectorio.vector import WKT, VectorReprojected
+data = 'POLYGON((-49.698036566343376 -9.951372897703846,-51.148231878843376 -11.591810720955946,-48.467567816343376 -11.763953408065282,-49.698036566343376 -9.951372897703846))'
+wkt = VectorReprojected(WKT(data), out_srid=31982)
 
-wkt.collection(ds)  # read all data
+wkt.geometry_collection()  # reading all data
 
-for item in wkt.items(ds):  # iterating by each geometry
-    print(item)
+for geom in wkt.geometries():  # iterating by each geometry
+    print(geom)
 
-wkt.write(ds, 'data-reprojected.wkt')  # creating a new wkt file
+wkt.write('data-reprojected.wkt')  # creating a new wkt file
 ```
 
 - Reprojecting a Geojson
@@ -265,16 +269,16 @@ wkt.write(ds, 'data-reprojected.wkt')  # creating a new wkt file
 By default the geojson is in WGS84 spatial reference.
 
 ```python
-from vectorio.vector import Geojson, VectorIOReprojected
-gjs = VectorIOReprojected(Geojson(), out_srid=31982)
-ds = gjs.datasource('{"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon","coordinates": [[[-45.992889404296875,-9.654907854199012],[-46.12884521484374,-9.72259300616733],[-45.96954345703125,-9.738835407948073],[-45.992889404296875,-9.654907854199012]]]}}]}')
+from vectorio.vector import Geojson, VectorReprojected
+data = '{"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon","coordinates": [[[-45.992889404296875,-9.654907854199012],[-46.12884521484374,-9.72259300616733],[-45.96954345703125,-9.738835407948073],[-45.992889404296875,-9.654907854199012]]]}}]}'
+gjs = VectorReprojected(Geojson(data), out_srid=31982)
 
-gjs.collection(ds)  # read all data
+gjs.feature_collection()  # reading all data
 
-for item in gjs.items(ds):  # iterating by each feature
-    print(item)
+for feat in gjs.features():  # iterating by each feature
+    print(feat)
 
-gjs.write(ds, 'data-reprojected.geojson')  # creating a new geojson file
+gjs.write('data-reprojected.geojson')  # creating a new geojson file
 ```
 
 <br/>
@@ -294,53 +298,58 @@ VectorComposite(input_vector_obj, ouput_vector_obj)
 ```python
 from vectorio.vector import Geojson, WKT, VectorComposite
 data = '{"type": "FeatureCollection","features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon","coordinates": [[[-44.89013671875,-6.577303118123875],[-46.29638671874999,-7.460517719883772],[-44.4287109375,-7.318881730366743],[-44.89013671875,-6.577303118123875]]]}}]}'
-vector = VectorComposite(Geojson(), WKT())
+vector = VectorComposite(Geojson(data), WKT())
 ```
 
 - Reading all geometry from geojson as wkt
 
 ```python
-vector.collection(data)
+vector.geometry_collection()
 ```
 
 - Iterating over all geometries as wkt
 
 ```python
-for geom_wkt in vector.items(data):
+for geom_wkt in vector.geometries():
     print(geom_wkt)
 ```
 
 - Creating a wkt file
 
 ```python
-vector.write(data, 'output.wkt')
+vector.write('output.wkt')
 ```
 
 ##### Quick switch from wkt to shapefile as zip
 
 ```python
-from vectorio.vector import Shapefile, ShapefileAsZip, WKT, VectorComposite
+from vectorio.vector import Shapefile, ShapefileCompressed, WKT, VectorComposite
+from vectorio.compress import Zip
+
 data = 'MULTIPOLYGON (((40 40, 20 45, 45 30, 40 40)), ((20 35, 10 30, 10 10, 30 5, 45 20, 20 35), (30 20, 20 15, 20 25, 30 20)))'
-vector = VectorComposite(WKT(), ShapefileAsZip(Shapefile()))
+vector = VectorComposite(
+    WKT(data),
+    ShapefileCompressed(Shapefile(), compress_engine=Zip())
+)
 ```
 
 - Reading all geometry from wkt
 
 ```python
-vector.collection(data)
+vector.geometry_collection()
 ```
 
 - Iterating over all geometries
 
 ```python
-for geom in vector.items(data):
+for geom in vector.geometries():
     print(geom)
 ```
 
 - Creating a shapefile as zip
 
 ```python
-vector.write(data, 'output.zip')
+vector.write('output.zip')
 ```
 
 ##### Search UTM Zone from Geometry
@@ -349,9 +358,10 @@ vector.write(data, 'output.zip')
 
 ```python
 from vectorio.vector import UTMZone, VectorIOReprojected, WKT
-ds_wkt = VectorIOReprojected(WKT(), out_srid=4326).datasource('POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))')
+data = 'POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))'
+ds_wkt = VectorIOReprojected(WKT(data), out_srid=4326).datasource()
 utm = UTMZone()
-utm.zones(ds_wkt) # getting all UTM Zones that intersect with the geometry
+utm.zones(ds_wkt)  # getting all UTM Zones that intersect with the geometry
 ```
 
 - The method **zone_from_biggest_geom** get only one zone that has the biggest geometry. For example, if a large geometry is in UTM Zone 25N or 26N, this method will calculate the area (for polygon) or length (for line) of geometry and return the UTM Zone where the area or length is the biggest.
@@ -420,20 +430,22 @@ possible_error()
 
 ```python
 from vectorio.vector import WKT, DataSourceReprojected
-wkt = WKT()
-ds = wkt.datasource('POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))')
-ds1 = DataSourceReprojected(ds, out_srid=31983).ref()
-wkt.collection(ds1)
+data = 'POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))'
+wkt = WKT(data)
+ds = wkt.datasource()
+new_ds = DataSourceReprojected(ds, out_srid=31983).ref()
+wkt.geometry_collection(ds=new_ds)
 ```
 - Reprojecting with WKT Projection.
 
 ```python
 from vectorio.vector import WKT, DataSourceReprojected
-wkt = WKT()
+data = 'POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))'
+wkt = WKT(data)
 prj = 'PROJCS["SIRGAS 2000 / UTM zone 23S",GEOGCS["SIRGAS 2000",DATUM["Sistema_de_Referencia_Geocentrico_para_America_del_Sur_2000",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6674"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4674"]],UNIT["metre",1,AUTHORITY["EPSG","9001"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-45],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",10000000],AUTHORITY["EPSG","31983"],AXIS["Easting",EAST],AXIS["Northing",NORTH]]'
-ds = wkt.datasource('POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))')
-ds2 = DataSourceReprojected(ds, out_wkt_prj=prj, use_wkt_prj=True).ref()
-wkt.collection(ds2)
+ds = wkt.datasource()
+new_ds = DataSourceReprojected(ds, out_wkt_prj=prj, use_wkt_prj=True).ref()
+wkt.geoemtry_collection(new_ds)
 ```
 
 #### Counting Vertices
@@ -449,8 +461,8 @@ All classes that are vector has the method for count all vertices. Below, are be
 
 ```python
 from vectorio.vector import WKT
-wkt = WKT() 
-ds = wkt.datasource('POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))')
-wkt.vertices_by_feature(ds) # works with shapefile or Geojson 
+data = 'POLYGON((-45.522540331834634 -6.851736627227062,-47.016680956834634 -7.7670786428296275,-45.434649706834634 -8.332736100352385,-45.522540331834634 -6.851736627227062))'
+wkt = WKT(data)
+wkt.vertices_by_feature() # works with shapefile or Geojson 
 # shapefile_obj.vertices_by_feature() or geojson_obj.vertices_by_feature()
 ```
