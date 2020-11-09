@@ -1,12 +1,11 @@
 # Vector IO - Geoprocessing utility for working with vector data.
-## \> WIP: UPDATING DOCS. The code examples already updated.
 - python >= 3.6
 - gdal >= 2.2
 - rar
 - unrar
 
 ## Description
-This project is a tool for working with vectorial data based on [GDAL](https://gdal.org/). This tool is an envelope about gdal and aims to work with different types of vector data quickly, intelligently, and simply. The vectorIO provide the support for (read and write) geojson, wkt and Shapefile, support for quickly switching between different spatial data types, and provides a exception handler for warnings from gdal.
+This project is a tool for working with vectorial data based on [GDAL](https://gdal.org/). This tool is an envelope about gdal and aims to work with different types of vector data quickly, intelligently, and simply. The vectorIO provide the support for (read and write) geojson, wkt, Shapefile and KML, support for quick switch between different spatial data types, and provides a exception handler for warnings from gdal.
 
 ## Installation
 
@@ -46,7 +45,7 @@ pip3 install gdal==<gdal_version>
 - [Read and write WKT](#read-and-write-wkt)
 - [Read and write Shapefile](#read-and-write-wkt)
 - [Reprojecting a vector](#reprojecting-a-vector)
-- [Quickly switching between geographic data](#quickly-switching-between-geographic-data)
+- [Quick switch between geographic data](#quickly-switching-between-geographic-data)
 - [Search UTM Zone from Geometry](#search-utm-zone-from-geometry)
 - [Raise exception for warnings from gdal](#raise-exception-for-warnings-from-gdal)
 - [Reprojecting a datasource directly](#reprojecting-a-datasource-directly)
@@ -54,7 +53,7 @@ pip3 install gdal==<gdal_version>
 
 #### Read and Write Geojson
 
-Working with geojson data and geojson file. By default, the datasource is created as WGS84.
+Working with geojson data. By default, the datasource is created as WGS84.
 
 - Preparing the data
 
@@ -101,7 +100,7 @@ with open('data.geojson') as f:
 
 #### Read and write WKT
 
-Working with wkt data and wkt file. Is supported geometry collection and single geometries. By default, the datasource is created as WGS84.
+Working with wkt data. Is supported geometry collection and single geometries. By default, the datasource is created as WGS84.
 
 The wkt object has some parameters:
 
@@ -141,7 +140,6 @@ wkt.write('data.wkt')
 - Reading from wkt file
 
 ```python
-from vectorio.vector import GeoData
 with open('data.wkt') as f:
     wkt = WKT(f.read())
     wkt.geometry_collection()
@@ -151,7 +149,7 @@ with open('data.wkt') as f:
 
 #### Read and write Shapefile
 
-Working with read and write shapefile. Is supported shapefiles compressed as .zip and .rar. By default, the datasource is created as based on projection present on .prj file. *obs: read and write of the .rar files is available only for linux OS. Only the ShapefileAsRar class has this restriction. The other classes are available for any OS.*
+Working with read and write shapefile. Is supported shapefiles compressed as .zip and .rar. By default, the datasource is created based on projection present on .prj file. *obs: read and write of the .rar files is available only for linux OS. Only the vectorio.compress.Rar (engine to compress) class has this restriction. The other classes are available for any OS.*
 
 - Preparing the data
 
@@ -166,7 +164,8 @@ shape = Shapefile('data.shp')
 shape.feature_collection()
 ```
 
-- Reading and iterating over each feature from .shp file
+- Reading and iterating over each feature from .shp file.
+TODO: CORRIGIR GEOMETRY_COLLECTION
 
 ```python
 # Interanting over features
@@ -196,7 +195,7 @@ By default the algorithm will search recusivly the files .shp, .shx, .dbf, .prj 
 from vectorio.vector import Shapefile, ShapefileCompressed
 from vectorio.compress import Zip
 
-shape = ShapefileAsZip(Shapefile('data.zip'), compress_engine=Zip())
+shape = ShapefileCompressed(Shapefile('data.zip'), compress_engine=Zip())
 shape.feature_collection() # reading all data
 
 for feat in shape.features():  # iterating over each item
@@ -212,7 +211,7 @@ shape.write('out.zip') # Creating a shapefile compressed as .zip
 from vectorio.vector import Shapefile, ShapefileCompressed
 from vectorio.compress import Rar
 
-shape = ShapefileAsZip(Shapefile('data.rar'), compress_engine=Rar())
+shape = ShapefileCompressed(Shapefile('data.rar'), compress_engine=Rar())
 shape.feature_collection()  # read all data
 
 for feat in shape.features():  # iterating over each item
@@ -233,7 +232,7 @@ If the input srid (in_srid) are be ommited, will used the srid from geometry.
 
 ```python
 from vectorio.vector import Shapefile, ShapefileCompressed, VectorReprojected
-from vectorio.compressed import Zip
+from vectorio.compress import Zip
 shape = VectorReprojected(
     ShapefileCompressed(Shapefile('data_utm22.zip'), compress_engine=Zip()),
     in_srid=31982, out_srid=4674
@@ -283,7 +282,7 @@ gjs.write('data-reprojected.geojson')  # creating a new geojson file
 
 <br/>
 
-#### Quickly Switching Between Geographic Data
+#### Quick Switch Between Geographic Data
 
 For execution of the Quick switch must be used the *VectorComposite* present on package *vectorio.vector*.
 
@@ -357,9 +356,9 @@ vector.write('output.zip')
 - This functionality will search the UTM Zone from some geometry.
 
 ```python
-from vectorio.vector import UTMZone, VectorIOReprojected, WKT
+from vectorio.vector import UTMZone, VectorReprojected, WKT
 data = 'POLYGON((-73.79131452179155 -11.78691590735885,-27.12139264679149 -12.645910804419744,-47.46330883419978 10.894322081983276,-73.79131452179155 -11.78691590735885))'
-ds_wkt = VectorIOReprojected(WKT(data), out_srid=4326).datasource()
+ds_wkt = VectorReprojected(WKT(data), out_srid=4326).datasource()
 utm = UTMZone()
 utm.zones(ds_wkt)  # getting all UTM Zones that intersect with the geometry
 ```
@@ -372,12 +371,22 @@ utm.zones(ds_wkt)  # getting all UTM Zones that intersect with the geometry
     - *in_wkt_prj*: Optional. Used case the input datasource no has a CRS.
 
 ```python
-# out_wkt_prj - necessary for make metrics calculations
-out_wkt_prj = 'PROJCS["Brazil / Albers Equal Area Conic (WGS84)",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Albers_Conic_Equal_Area"],PARAMETER["longitude_of_center",-50.0],PARAMETER["standard_parallel_1",10.0],PARAMETER["standard_parallel_2",-40.0],PARAMETER["latitude_of_center",-25.0],UNIT["Meter",1.0]]'
-utm.zone_from_biggest_geom(ds_wkt, out_wkt_prj=out_wkt_prj) # getting one UTM Zone
+# prj_for_metrics - necessary for make metrics calculations
+prj_for_metrics = 'PROJCS["Brazil / Albers Equal Area Conic (WGS84)",GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Albers_Conic_Equal_Area"],PARAMETER["longitude_of_center",-50.0],PARAMETER["standard_parallel_1",10.0],PARAMETER["standard_parallel_2",-40.0],PARAMETER["latitude_of_center",-25.0],UNIT["Meter",1.0]]'
+utm.zone_from_biggest_geom(ds_wkt, wkt_prj_for_metrics=prj_for_metrics) # getting one UTM Zone
 ```
 
-- Points are ignored in this calculation. This method isn't remomended for geometries composed only by Points, (MultiPoint, GeometryCollection of points e etc.), because, the UTM zone returned is based in area/lenth metrics. Soon, will be implemented a method for get UTM Zone only for Point Geometries. 
+- Points are ignored in this calculation. This method isn't remomended for geometries composed only by Points, (MultiPoint, GeometryCollection of points e etc.), because, the UTM zone returned is based in area/length metrics. Soon, will be implemented a method for get UTM Zone only for Point Geometries. 
+
+###### UTM Zone for geometries with Topology Errors
+Case the your geometry has topology errors you should use the method *UTMZone().zones_from_iteration(wkt)* passing a WKT as argument. This method will return a set of the utm zones that the wkt intersect.
+
+```python
+utm.zones_from_iteration(
+    'POLYGON((-59.408117902654105 -6.5855114909234445,-62.132727277654105 -8.241414689294965,-58.836828840154105 -8.545736525537883,-62.835852277654105 -5.230474986041972,-58.836828840154105 -6.4981931392341705,-59.408117902654105 -6.5855114909234445))'
+)
+# {'20SW', '21SW'}
+```
 
 <br/>
 
@@ -394,8 +403,8 @@ self_intersect_polygon = 'POLYGON((-54.24438490181399 -5.466896872158672,-54.848
 
 @gdal_warning_as_exception
 def possible_error():
-    wkt = WKT()
-    ds = wkt.datasource(self_intersect_polygon)
+    wkt = WKT(self_intersect_polygon)
+    ds = wkt.datasource()
     lyr = ds.GetLayer(0)
     feat = lyr.GetFeature(0)
     feat.geometry().IsValid()
@@ -445,7 +454,7 @@ wkt = WKT(data)
 prj = 'PROJCS["SIRGAS 2000 / UTM zone 23S",GEOGCS["SIRGAS 2000",DATUM["Sistema_de_Referencia_Geocentrico_para_America_del_Sur_2000",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6674"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4674"]],UNIT["metre",1,AUTHORITY["EPSG","9001"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-45],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",10000000],AUTHORITY["EPSG","31983"],AXIS["Easting",EAST],AXIS["Northing",NORTH]]'
 ds = wkt.datasource()
 new_ds = DataSourceReprojected(ds, out_wkt_prj=prj, use_wkt_prj=True).ref()
-wkt.geoemtry_collection(new_ds)
+wkt.geometry_collection(ds=new_ds)
 ```
 
 #### Counting Vertices
