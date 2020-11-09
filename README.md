@@ -44,6 +44,7 @@ pip3 install gdal==<gdal_version>
 - [Read and write geojson](#read-and-write-geojson)
 - [Read and write WKT](#read-and-write-wkt)
 - [Read and write Shapefile](#read-and-write-wkt)
+- [Read and write KML](#read-and-write-KML)
 - [Reprojecting a vector](#reprojecting-a-vector)
 - [Quick switch between geographic data](#quickly-switching-between-geographic-data)
 - [Search UTM Zone from Geometry](#search-utm-zone-from-geometry)
@@ -221,6 +222,26 @@ shape.write('out.rar') # Creating a shapefile compressed as .rar
 # >>> out.rar
 ```
 
+<br/>
+
+#### Read and write KML
+
+- Currently the KML is processed as Geojson.
+
+```python
+from vectorio.vector import KML
+kml = KML('data.kml')
+
+# Interanting over features
+for feat in shape.features():
+    print(feat)
+
+# Interanting over geometries
+for geom in shape.geometries():
+    print(geom)
+
+kml.write('out.geojson')
+```
 <br/>
 
 #### Reprojecting a Vector

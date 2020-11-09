@@ -6,25 +6,43 @@ from vectorio.vector.composite.interfaces.ivector_composite import (
 from vectorio.vector.interfaces.ivectorio import IVectorIO
 from osgeo.ogr import DataSource
 from typing import Generator
+from typing import Optional
+from typeguard import typechecked
 
 
-class VectorComposite(IVectorComposite):
+class VectorComposite:
 
+    @typechecked
     def __init__(self, input_vector: IVectorIO, output_vector: IVectorIO):
         self._input_vector = input_vector
         self._output_vector = output_vector
 
-    def items(self, input_data: str) -> Generator[str, None, None]:
-        return self._output_vector.items(
-            self._input_vector.datasource(input_data)
+    @typechecked
+    def features(self, nmax: Optional[int] = None) -> Generator[str, None, None]:
+        return self._output_vector.features(
+            nmax, self._input_vector.datasource()
         )
 
-    def collection(self, input_data: str) -> str:
-        return self._output_vector.collection(
-            self._input_vector.datasource(input_data)
+    @typechecked
+    def geometries(self, nmax: Optional[int] = None) -> Generator[str, None, None]:
+        return self._output_vector.geometries(
+            nmax, self._input_vector.datasource()
         )
 
-    def write(self, input_data: str, out_path: str) -> str:
+    @typechecked
+    def feature_collection(self, nmax: Optional[int] = None) -> str:
+        return self._output_vector.feature_collection(
+            nmax, self._input_vector.datasource()
+        )
+
+    @typechecked
+    def geometry_collection(self, nmax: Optional[int] = None) -> str:
+        return self._output_vector.geometry_collection(
+            nmax, self._input_vector.datasource()
+        )
+
+    @typechecked
+    def write(self, out_path: str) -> str:
         return self._output_vector.write(
-            self._input_vector.datasource(input_data), out_path
+            out_path, self._input_vector.datasource()
         )

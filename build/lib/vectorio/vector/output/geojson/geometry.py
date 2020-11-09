@@ -1,11 +1,13 @@
 #!-*-coding:utf-8-*-
 
 from osgeo.ogr import Geometry
-from typeguard import typechecked
+from typing import Union
+from vectorio.config import NoneType
 
 
 class GeometryGeojson(str):
 
-    @typechecked
-    def __new__(cls, geometry: Geometry):
+    def __new__(cls, geometry: Union[Geometry, NoneType]):
+        if geometry is None:
+            return None
         return str.__new__(cls, geometry.ExportToJson())

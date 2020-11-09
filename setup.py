@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 
 setup(name='vectorio',
-    version='2.0.0',
+    version='2.0.3',
     description='Geoprocessing utility for working with vector data',
     author='Igor Rodrigues Sousa Silva',
     long_description=long_description,
@@ -31,4 +31,5 @@ setup(name='vectorio',
     ],
     python_requires='>=3.6',
     zip_safe=False,
+    scripts=['building.sh']
 )

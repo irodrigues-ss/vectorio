@@ -1,5 +1,6 @@
 MANIFEST.in
 README.md
+building.sh
 setup.py
 vectorio/__init__.py
 vectorio/config.py

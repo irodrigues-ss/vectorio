@@ -12,8 +12,8 @@ from vectorio.vector.output.geojson.geometry_collection import GeometryCollectio
 from vectorio.vector.interfaces.ivectorio import IVectorIO
 from vectorio.vector.exceptions import GeojsonInvalid
 from vectorio.config import GDAL_DRIVERS_NAME, NoneType
-from typeguard import typechecked
-from typing import Optional, Union, Generator
+from typeguard import typechecked, Generator
+from typing import Optional, Union
 
 
 class Geojson(IVectorIO):
@@ -61,6 +61,7 @@ class Geojson(IVectorIO):
 
             if i + 1 == nmax:
                 break
+        lyr.ResetReading()
 
     @typechecked
     def features(
@@ -79,12 +80,18 @@ class Geojson(IVectorIO):
         return self._geometries(ds, nmax)
 
     @typechecked
-    def feature_collection(self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None) -> FeatureCollectionGeojson:
+    def feature_collection(
+        self,
+        nmax: Optional[Union[int, NoneType]] = None,
+        ds: Optional[Union[DataSource, NoneType]] = None
+    ) -> FeatureCollectionGeojson:
         return FeatureCollectionGeojson(self.features(nmax, ds))
 
     @typechecked
     def geometry_collection(
-            self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+            self,
+            nmax: Optional[Union[int, NoneType]] = None,
+            ds: Optional[Union[DataSource, NoneType]] = None
     ) -> GeometryCollectionGeojson:
         return GeometryCollectionGeojson(self.geometries(nmax, ds))
 
