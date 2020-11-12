@@ -65,33 +65,39 @@ class WKT(IVectorIO):
 
     @typechecked
     def geometries(
-            self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
-    ) -> Generator[GeometryWKT, None, None]:
+            self, nmax: int = None, ds: Optional[Union[DataSource, NoneType]] = None
+    ) -> Generator[str, None, None]:
+        """
+        Obs: the "nmax" actually not has effect in WKT data, this parameter exists for keep the interface.
+        """
         wkt_geom = WKTGeometry(ds, self._as_geometry_collection)
         if ds is None:
             wkt_geom = WKTGeometry(self.datasource(), self._as_geometry_collection)
-        return wkt_geom.geometries(nmax)
+        return wkt_geom.geometries()
 
     @typechecked
     def features(
-        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+        self,  nmax: int = None, ds: Optional[Union[DataSource, NoneType]] = None
     ):
         raise InvalidOperationForThisDataType('This Data type not has features.')
 
     @typechecked
     def feature_collection(
-        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+        self, ds: Optional[Union[DataSource, NoneType]] = None
     ):
         raise InvalidOperationForThisDataType('This Data type not has feature collection.')
 
     @typechecked
     def geometry_collection(
-        self, nmax: Optional[Union[int, NoneType]] = None, ds: Optional[Union[DataSource, NoneType]] = None
+        self, nmax: int = None, ds: Optional[Union[DataSource, NoneType]] = None
     ) -> Union[GeometryCollectionWKT, str]:
+        """
+        Obs: the "nmax" actually not has effect in WKT data, this parameter exists for keep the interface.
+        """
         wkt_geom = WKTGeometry(ds, self._as_geometry_collection)
         if ds is None:
             wkt_geom = WKTGeometry(self.datasource(), self._as_geometry_collection)
-        return wkt_geom.collection(nmax)
+        return wkt_geom.collection()
 
     @typechecked
     def _write(self, ds: DataSource, out_path: str) -> str:

@@ -12,6 +12,8 @@ vectorio.egg-info/not-zip-safe
 vectorio.egg-info/requires.txt
 vectorio.egg-info/top_level.txt
 vectorio/_assets/World_UTM_Grid_HM.zip
+vectorio/_assets/bkps/wkt.py.bkp
+vectorio/_assets/bkps/wkt_geom_collec.py.bkp
 vectorio/compress/__init__.py
 vectorio/compress/icompress_engine.py
 vectorio/compress/rar.py

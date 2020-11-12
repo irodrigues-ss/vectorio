@@ -16,40 +16,28 @@ class WKTGeometry:
         self._ds = ds
         self._as_geometry_collection = as_geometry_collection
 
-    @typechecked
-    def _is_geometry_collection(self, geom: Geometry) -> bool:
-       return geom.ExportToWkt()[:GEOM_COLLECTION_LEN].startswith(GEOMETRYCOLLECTION_PREFIX)
+    # @typechecked
+    # def _is_geometry_collection(self, geom: Geometry) -> bool:
+    #    return geom.ExportToWkt()[:GEOM_COLLECTION_LEN].startswith(GEOMETRYCOLLECTION_PREFIX)
 
     @typechecked
-    def geometries(self, nmax: int = None) -> Generator[GeometryWKT, None, None]:
+    def geometries(self) -> Generator[str, None, None]:
         ds = self._ds
         lyr = ds.GetLayer(0)
         if lyr.GetFeatureCount() == 0:
-            yield GeometryWKT()  # GeometryEmpty
+            yield 'GEOMETRY_EMPTY'
 
-        if lyr.GetFeatureCount() == 1:
-            feat = lyr.GetFeature(0)
+        for idx_feat in range(lyr.GetFeatureCount()):
+            feat = lyr.GetFeature(idx_feat)
             geom = feat.geometry()
-            if self._is_geometry_collection(geom):
-                for i, geom_inner in enumerate(geom):
-                    yield GeometryWKT(geom_inner)
-                    if i + 1 == nmax:
-                        break
-            else:
-                yield GeometryWKT(geom)
-        else:
-            for i, feat in enumerate(lyr):
-                geom = feat.geometry()
-                yield GeometryWKT(geom)
-                if i + 1 == nmax:
-                    break
-
+            if geom is not None:
+                yield geom.ExportToWkt()
         lyr.ResetReading()
 
     @typechecked
-    def collection(self, nmax: int = None) -> Union[GeometryCollectionWKT, str]:
+    def collection(self) -> Union[GeometryCollectionWKT, str]:
         out_wkt = reduce(
-            lambda x, y: x + ',' + y, self.geometries(nmax)
+            lambda x, y: x + ',' + y, self.geometries()
         )
         if out_wkt == 'GEOMETRY_EMPTY':
             return 'GEOMETRY_EMPTY'

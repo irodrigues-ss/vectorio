@@ -24,6 +24,13 @@ class TestWKTValid:
             wkt = WKT(exp_data)
             assert isinstance(wkt.datasource(), DataSource)
 
+    def test_creating_a_valid_wkt(self):
+        # TODO: create a test like this for other data types
+        wkt1 = WKT(self.exp_data_lst[0])
+        wkt2 = WKT(wkt1.geometry_collection())
+        assert isinstance(wkt2.datasource(), DataSource)
+        assert wkt2.geometry_collection().startswith('GEOMETRYCOLLECTION')
+
     def test_geometries(self):
 
         def create_items(idx_data: int):
@@ -34,8 +41,7 @@ class TestWKTValid:
             return result
 
         items = create_items(0)
-        assert items[0].startswith('POLYGON')
-        assert items[1].startswith('POINT')
+        assert items[0].startswith('GEOMETRYCOLLECTION')
         items1 = create_items(1)
         assert items1[0].startswith('POINT')
         items2 = create_items(2)
@@ -61,10 +67,6 @@ class TestWKTValid:
         assert wkt.geometry_collection().startswith('GEOMETRYCOLLECTION')
         wkt = WKT(self.exp_data_lst[1], as_geometry_collection=False)
         assert wkt.geometry_collection().startswith('POINT')
-
-    def test_geometry_collection_nmax(self):
-        wkt = WKT(self.exp_data_lst[0])
-        assert wkt.geometry_collection(1) == 'GEOMETRYCOLLECTION (POLYGON ((-51.0657999665975 -8.90375703340932,-47.1107218415975 -8.90375703340932,-47.1107218415975 -13.2155771434958,-51.0657999665975 -13.2155771434958,-51.0657999665975 -8.90375703340932)))'
 
     def test_collection_param_srid(self):
         srid = 4674

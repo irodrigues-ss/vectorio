@@ -34,9 +34,11 @@ class TestVectorComposite:
         gen_data = vector.geometries()
         gjs_ds = gdal.OpenEx(self.gjs_data)
         lyr = gjs_ds.GetLayer(0)
+
         assert isinstance(gen_data, Generator)
 
         for idx, data in enumerate(gen_data):  # wkt item
+
             feat = lyr.GetFeature(idx)
             exp_geom = feat.geometry()
             geom_created = ogr.CreateGeometryFromWkt(data)
